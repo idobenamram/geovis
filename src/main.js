@@ -3,8 +3,161 @@ import { marked } from 'marked';
 import * as monaco from 'monaco-editor';
 import hljs from 'highlight.js';
 
-// Configure marked with syntax highlighting
+// Store all Three.js environments
+const environments = new Map();
+
+// Store code snippets by container ID
+const codeSnippets = new Map();
+
+class ThreeJSEnvironment {
+    constructor(containerId, code) {
+        this.containerId = containerId;
+        this.code = code;
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+        this.renderer = null;
+        this.animationFunction = null;
+        this.isAnimating = false;
+        this.animationFrameId = null;
+    }
+
+    init() {
+        const container = document.getElementById(this.containerId);
+        if (!container) return;
+
+        this.renderer = new THREE.WebGLRenderer({ 
+            antialias: true,
+            alpha: true 
+        });
+
+        // Set size based on container
+        const updateSize = () => {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            this.renderer.setSize(width, height);
+            this.camera.aspect = width / height;
+            this.camera.updateProjectionMatrix();
+        };
+
+        updateSize();
+        window.addEventListener('resize', updateSize);
+
+        container.appendChild(this.renderer.domElement);
+
+        // Run the code immediately
+        this.run(this.code);
+    }
+
+    animate() {
+        if (!this.isAnimating) return;
+
+        this.animationFrameId = requestAnimationFrame(() => this.animate());
+        
+        try {
+            if (this.animationFunction) {
+                this.animationFunction(this.scene, this.camera, THREE);
+            }
+            this.renderer.render(this.scene, this.camera);
+        } catch (error) {
+            console.error('Animation error:', error);
+            this.stop();
+        }
+    }
+
+    run(code) {
+        this.stop();
+        this.cleanup();
+
+        try {
+            // Create a module from the code that exports setup and animate functions
+            const wrappedCode = `
+                let setup, animate;
+                ${code}
+                return { setup, animate };
+            `;
+            
+            // Get the setup and animate functions
+            const module = new Function('scene', 'camera', 'THREE', wrappedCode)(this.scene, this.camera, THREE);
+            
+            if (!module.setup || typeof module.setup !== 'function') {
+                throw new Error('Each example must export a setup function');
+            }
+
+            // Run the setup code
+            module.setup();
+            
+            // Store the animation function if it exists
+            this.animationFunction = module.animate;
+
+            // Ensure initial render
+            this.renderer.render(this.scene, this.camera);
+            
+            // Start animation loop if there's an animation function
+            if (this.animationFunction) {
+                this.isAnimating = true;
+                this.animate();
+            }
+        } catch (error) {
+            console.error('Error executing code:', error);
+            const container = document.getElementById(this.containerId);
+            if (container) {
+                container.innerHTML = `<div style="color: red; padding: 1rem;">Error: ${error.message}</div>`;
+            }
+        }
+    }
+
+    stop() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+        }
+        this.isAnimating = false;
+    }
+
+    cleanup() {
+        while(this.scene.children.length > 0) { 
+            const object = this.scene.children[0];
+            if (object.geometry) object.geometry.dispose();
+            if (object.material) {
+                if (object.material.map) object.material.map.dispose();
+                object.material.dispose();
+            }
+            this.scene.remove(object);
+        }
+    }
+}
+
+// Function to handle preview clicks
+function handlePreviewClick(containerId) {
+    const code = codeSnippets.get(containerId);
+    const editorElement = document.querySelector('#editor-container');
+    if (code && editorElement && editorElement.editor) {
+        editorElement.editor.setValue(code);
+    }
+}
+
+// Configure marked with custom renderer for animate blocks
+const renderer = new marked.Renderer();
+const originalCodeRenderer = renderer.code.bind(renderer);
+
+renderer.code = function(code, language) {
+    if (language === 'animate') {
+        const containerId = 'preview-' + Math.random().toString(36).substr(2, 9);
+        
+        // Store the code snippet
+        codeSnippets.set(containerId, code);
+        
+        // Create new Three.js environment
+        const env = new ThreeJSEnvironment(containerId, code);
+        environments.set(containerId, env);
+
+        // Create container
+        return `<div class="preview-container" id="${containerId}"></div>`;
+    }
+    return originalCodeRenderer(code, language);
+};
+
 marked.setOptions({
+    renderer: renderer,
     highlight: function(code, lang) {
         if (lang && hljs.getLanguage(lang)) {
             return hljs.highlight(code, { language: lang }).value;
@@ -13,78 +166,9 @@ marked.setOptions({
     }
 });
 
-// Sample markdown content with placeholder for preview only
-const markdownContent = `
-# Transformations in Three.js
-
-Three.js provides several ways to transform objects in 3D space. The three fundamental transformations are:
-
-1. **Translation** - Moving objects in space using \`.position\`
-2. **Rotation** - Rotating objects using \`.rotation\`
-3. **Scale** - Changing object size using \`.scale\`
-
-## Interactive Example
-
-Below you'll find an interactive example showing these transformations. The code editor on the right creates a purple cube and applies various transformations to it. Try modifying the values to see how they affect the cube's position, rotation, and scale.
-
-<div class="preview-container" id="preview-container"></div>
-
-### Code Explanation
-
-The code on the right shows how to apply transformations. Here's what each transformation does:
-
-\`\`\`javascript
-// Example: Try these transformations
-cube.position.x = -0.5;  // Move left/right
-cube.position.y = -0.1;  // Move up/down
-cube.position.z = 1;     // Move forward/back
-
-cube.scale.x = 1.25;     // Stretch horizontally
-cube.scale.y = 0.25;     // Compress vertically
-cube.scale.z = 0.5;      // Scale depth
-\`\`\`
-
-Try modifying these values in the editor to see how they affect the cube!
-`;
-
-// Render markdown
-document.getElementById('markdown-content').innerHTML = marked(markdownContent);
-
-// Initialize Monaco Editor with updated default code
+// Initialize Monaco Editor
 const editor = monaco.editor.create(document.getElementById('editor-container'), {
-    value: `// Create a cube
-const geometry = new THREE.BoxGeometry(2, 2, 2);
-const material = new THREE.MeshPhongMaterial({ 
-    color: 'purple',
-    flatShading: true
-});
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
-
-// Add lights
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(1, 1, 1);
-scene.add(light);
-const ambientLight = new THREE.AmbientLight(0x404040);
-scene.add(ambientLight);
-
-// Position camera
-camera.position.z = 5;
-
-// Set initial transformations
-cube.position.x = -0.5;
-cube.position.y = -0.1;
-cube.position.z = 1;
-
-cube.scale.x = 1.25;
-cube.scale.y = 0.25;
-cube.scale.z = 0.5;
-
-// Animation
-function animate() {
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-}`,
+    value: '',
     language: 'javascript',
     theme: 'vs-dark',
     minimap: { enabled: false },
@@ -96,106 +180,25 @@ function animate() {
     padding: { top: 10 },
 });
 
-// Three.js setup
-let scene, camera, renderer, animationFunction;
-let isAnimating = false;
-let animationFrameId;
+// Store editor reference for preview click handler
+document.querySelector('#editor-container').editor = editor;
 
-function initThreeJs() {
-    // Setup scene
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    
-    const container = document.getElementById('preview-container');
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    
-    // Set size based on container
-    const updateSize = () => {
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-        renderer.setSize(width, height);
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-    };
-    
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    
-    container.appendChild(renderer.domElement);
-}
+// Function to process markdown and initialize all environments
+async function processMarkdown(markdownContent) {
+    // Render markdown
+    document.getElementById('markdown-content').innerHTML = marked(markdownContent);
 
-function animate() {
-    if (!isAnimating) return;
-    
-    animationFrameId = requestAnimationFrame(animate);
-    if (animationFunction) {
-        animationFunction();
-    }
-    renderer.render(scene, camera);
-}
-
-// Function to run the code in the editor
-function runCode() {
-    // Clean up previous scene
-    if (isAnimating) {
-        cancelAnimationFrame(animationFrameId);
-    }
-    isAnimating = false;
-    
-    if (scene) {
-        while(scene.children.length > 0) { 
-            const object = scene.children[0];
-            if (object.geometry) object.geometry.dispose();
-            if (object.material) object.material.dispose();
-            scene.remove(object);
+    // Initialize all environments and attach click handlers
+    for (const [containerId, env] of environments) {
+        env.init();
+        const container = document.getElementById(containerId);
+        if (container) {
+            container.addEventListener('click', () => handlePreviewClick(containerId));
         }
     }
-    
-    // Initialize Three.js if not already done
-    if (!renderer) {
-        initThreeJs();
-    }
-    
-    const code = editor.getValue();
-    
-    try {
-        // Create animation function from the code
-        animationFunction = new Function('scene', 'camera', 'THREE', `
-            return function() {
-                ${code}
-            };
-        `)(scene, camera, THREE);
-        
-        // Run the animation function once to set up the scene
-        animationFunction();
-        
-        // Start animation loop
-        isAnimating = true;
-        animate();
-        
-    } catch (error) {
-        console.error('Error executing code:', error);
-        const previewContainer = document.getElementById('preview-container');
-        previewContainer.innerHTML = `<div style="color: red; padding: 1rem;">Error: ${error.message}</div>`;
-    }
 }
 
-// Add run button
-const runButton = document.createElement('button');
-runButton.textContent = 'Run Code';
-runButton.className = 'run-button';
-document.getElementById('preview-container').appendChild(runButton);
-
-// Initialize Three.js on page load
-initThreeJs();
-
-// Add run button listener
-runButton.addEventListener('click', runCode);
-
-// Run the initial code
-runCode();
-
-// Initialize resizer functionality
+// Initialize resizer
 function initResizer() {
     const resizer = document.getElementById('resizer');
     const leftPanel = document.querySelector('.docs-content');
@@ -233,4 +236,10 @@ function initResizer() {
 }
 
 // Initialize resizer
-initResizer(); 
+initResizer();
+
+// Load and process the markdown content
+fetch('/content/transformations.md')
+    .then(response => response.text())
+    .then(markdown => processMarkdown(markdown))
+    .catch(error => console.error('Error loading markdown:', error));
