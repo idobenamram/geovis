@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Three.js Documentation</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-content">
+            <div class="nav-left">
+                <a href="#" class="logo">Three.js Interactive Docs</a>
+            </div>
+            <div class="nav-right">
+                <button class="menu-button">☰</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="content-wrapper">
+            <!-- Left side: Documentation content -->
+            <div class="docs-content">
+                <div class="markdown-content" id="markdown-content"></div>
+            </div>
+            
+            <!-- Resizer -->
+            <div class="resizer" id="resizer"></div>
+            
+            <!-- Right side: Code editor -->
+            <div class="editor-panel">
+                <div id="editor-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html> 
