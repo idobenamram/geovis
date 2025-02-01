@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Documentation from './components/Documentation';
 import CodeEditor from './components/CodeEditor';
+import LatexEditor from './components/LatexEditor';
 import './style.css';
 
 const App: React.FC = () => {
   const [currentCode, setCurrentCode] = useState('');
   const [markdownContent, setMarkdownContent] = useState('');
+  const [latexContent, setLatexContent] = useState('\\frac{a+b}{c}');
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
@@ -71,8 +73,8 @@ const App: React.FC = () => {
               <Link to="/" className="logo">Three.js Interactive Docs</Link>
             </div>
             <div className="nav-right">
-              <Link to="/" className="nav-link">Package 1</Link>
-              <Link to="/package2" className="nav-link">Package 2</Link>
+              <Link to="/" className="nav-link">Three.js Examples</Link>
+              <Link to="/latex" className="nav-link">LaTeX Editor</Link>
             </div>
           </div>
         </nav>
@@ -104,26 +106,12 @@ const App: React.FC = () => {
                 } 
               />
               <Route 
-                path="/package2" 
+                path="/latex" 
                 element={
-                  <>
-                    <div className="docs-content">
-                      <Documentation 
-                        markdownContent={markdownContent} 
-                        onCodeClick={handleCodeClick} 
-                      />
-                    </div>
-                    <div 
-                      className={`resizer ${isResizing ? 'resizing' : ''}`}
-                      onMouseDown={handleMouseDown}
-                    />
-                    <div className="editor-panel">
-                      <CodeEditor 
-                        value={currentCode} 
-                        onChange={setCurrentCode} 
-                      />
-                    </div>
-                  </>
+                  <LatexEditor 
+                    value={latexContent}
+                    onChange={setLatexContent}
+                  />
                 } 
               />
             </Routes>

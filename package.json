@@ -10,18 +10,24 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@unified-latex/unified-latex-util-parse": "^1.8.1",
+    "@unified-latex/unified-latex-util-print-raw": "^1.8.0",
     "highlight.js": "^11.9.0",
+    "katex": "^0.16.21",
+    "latex-utensils": "^6.2.0",
     "marked": "^12.0.0",
     "monaco-editor": "^0.45.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0",
-    "three": "^0.161.0"
+    "three": "^0.161.0",
+    "unified": "^11.0.5",
+    "unified-latex": "^1.1.3"
   },
   "devDependencies": {
     "@types/marked": "^5.0.2",
-    "@types/react": "^18.2.55",
-    "@types/react-dom": "^18.2.19",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
     "@types/three": "^0.161.2",
     "@vitejs/plugin-react": "^4.2.1",
     "typescript": "^5.3.3",

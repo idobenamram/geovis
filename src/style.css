@@ -172,6 +172,192 @@ body {
     background-color: #218838;
 }
 
+/* LaTeX Editor Styles */
+.latex-editor {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--background-dark);
+}
+
+.latex-editor .editor-container {
+    flex: 1;
+    min-height: 0;
+    padding: 1rem;
+}
+
+.preview-panel {
+    height: 300px;
+    background-color: var(--background-light);
+    border-top: 1px solid var(--border-color);
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.preview-panel h3 {
+    margin: 0 0 1rem;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.latex-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.latex-preview .katex-display {
+    margin: 0;
+}
+
+.error-message {
+    color: #dc3545;
+    padding: 1rem;
+    background-color: #fff;
+    border: 1px solid #dc3545;
+    border-radius: 6px;
+    margin-top: 1rem;
+}
+
+/* LaTeX Editor Container */
+.latex-editor-container {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    padding: 2rem;
+}
+
+.latex-header {
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.latex-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.latex-header p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.example-equations {
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.example-equations h3 {
+    margin: 0 0 1rem;
+    font-size: 1.2rem;
+    color: var(--text-color);
+}
+
+.example-equations ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.example-equations li {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+.example-equations code {
+    background-color: #f1f1f1;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    color: #333;
+}
+
+.latex-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.latex-input, .latex-output {
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.latex-input h2, .latex-output h2 {
+    margin: 0 0 1rem;
+    font-size: 1.2rem;
+    color: var(--text-color);
+}
+
+.latex-input textarea {
+    width: 100%;
+    height: 300px;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.latex-output {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.preview-section, .ast-section {
+    width: 100%;
+}
+
+.preview-box {
+    background-color: #f8f9fa;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 1.5rem;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-box .katex-display {
+    margin: 0;
+}
+
+.ast-box {
+    background-color: #f8f9fa;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 1rem;
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    overflow-x: auto;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .content-wrapper {
@@ -190,5 +376,22 @@ body {
 
     .markdown-content {
         max-width: 100%;
+    }
+
+    .latex-content {
+        grid-template-columns: 1fr;
+    }
+
+    .latex-editor-container {
+        padding: 1rem;
+    }
+
+    .latex-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .latex-header h1 {
+        font-size: 2rem;
     }
 } 
