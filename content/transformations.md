@@ -11,8 +11,8 @@ Three.js provides several ways to transform objects in 3D space. The three funda
 Below you'll find an interactive example showing these transformations. Try modifying the values to see how they affect the cube's position, rotation, and scale.
 
 ```animate
-// Setup function runs once to set up the scene
-setup = function() {
+// Setup function to initialize the scene
+setup = function(scene, camera, THREE) {
     // Create a cube
     const geometry = new THREE.BoxGeometry(2, 2, 2);
     const material = new THREE.MeshPhongMaterial({ 
@@ -43,13 +43,14 @@ setup = function() {
 
     // Store cube reference for animation
     window.cube = cube;
-}
+};
 
-// Animation function runs every frame
-animate = function() {
+// Animation function to update the scene
+animate = function(scene, camera, THREE) {
+    const cube = window.cube;
     cube.rotation.x += 0.01;
     cube.rotation.y += 0.01;
-}
+};
 ```
 
 ### Code Explanation
