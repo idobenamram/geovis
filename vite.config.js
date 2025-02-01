@@ -8,6 +8,7 @@ export default defineConfig({
         include: ['monaco-editor/esm/vs/editor/editor.worker'],
     },
     build: {
+        target: 'esnext',
         rollupOptions: {
             output: {
                 manualChunks: {
@@ -16,5 +17,8 @@ export default defineConfig({
                 },
             },
         },
+    },
+    esbuild: {
+        target: 'esnext',
     },
 }); 

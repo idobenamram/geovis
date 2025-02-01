@@ -60,6 +60,23 @@ body {
     padding: 0.25rem;
 }
 
+.nav-link {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 8px 16px;
+    margin: 0 4px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
 /* Main Content */
 .main-container {
     flex: 1;

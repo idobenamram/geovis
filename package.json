@@ -1,20 +1,24 @@
 {
-  "name": "threejs-interactive-docs",
-  "version": "1.0.0",
-  "description": "Interactive Three.js documentation and examples",
+  "name": "geovis",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "three": "^0.160.0",
-    "monaco-editor": "^0.45.0",
-    "marked": "^11.1.1",
     "highlight.js": "^11.9.0",
-    "@monaco-editor/react": "^4.6.0"
+    "marked": "^12.0.0",
+    "monaco-editor": "^0.45.0",
+    "three": "^0.161.0"
   },
   "devDependencies": {
-    "vite": "^5.0.12"
+    "@types/marked": "^5.0.2",
+    "@types/three": "^0.161.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8"
   }
 }
