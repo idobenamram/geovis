@@ -295,14 +295,20 @@ body {
     align-items: start;
 }
 
-.latex-input, .latex-output {
+.editor-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.latex-input, .ast-section, .preview-box, .visualization-section {
     background-color: #fff;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1.5rem;
 }
 
-.latex-input h2, .latex-output h2 {
+.latex-input h2, .ast-section h2, .preview-box h2, .visualization-section h2 {
     margin: 0 0 1rem;
     font-size: 1.2rem;
     color: var(--text-color);
@@ -310,7 +316,7 @@ body {
 
 .latex-input textarea {
     width: 100%;
-    height: 300px;
+    height: 200px;
     padding: 1rem;
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -320,42 +326,86 @@ body {
     resize: vertical;
 }
 
-.latex-output {
+.preview-section {
     display: flex;
     flex-direction: column;
     gap: 2rem;
 }
 
-.preview-section, .ast-section {
-    width: 100%;
-}
-
-.preview-box {
-    background-color: #f8f9fa;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 1.5rem;
+.preview-content {
     min-height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.preview-box .katex-display {
-    margin: 0;
-}
-
 .ast-box {
     background-color: #f8f9fa;
-    border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 1rem;
     font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
     font-size: 0.8rem;
     line-height: 1.4;
     overflow-x: auto;
-    max-height: 300px;
+    max-height: 200px;
     overflow-y: auto;
+}
+
+.visualization-section {
+    min-height: 400px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Step-by-Step Breakdown Styles */
+.steps-section {
+    margin-top: 2rem;
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.steps-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.step-item {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 1rem;
+}
+
+.step-item h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: #495057;
+}
+
+.step-preview {
+    background-color: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.ganja-preview {
+    background-color: #f1f3f5;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 1rem;
+}
+
+.ganja-preview pre {
+    margin: 0;
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 /* Responsive Design */
@@ -393,5 +443,21 @@ body {
 
     .latex-header h1 {
         font-size: 2rem;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .latex-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .step-item {
+        padding: 0.75rem;
+    }
+    
+    .step-preview,
+    .ganja-preview {
+        padding: 0.75rem;
     }
 } 

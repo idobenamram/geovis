@@ -8,7 +8,7 @@ import './style.css';
 const App: React.FC = () => {
   const [currentCode, setCurrentCode] = useState('');
   const [markdownContent, setMarkdownContent] = useState('');
-  const [latexContent, setLatexContent] = useState('\\frac{a+b}{c}');
+  const [latexContent, setLatexContent] = useState('a \\wedge b');
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
