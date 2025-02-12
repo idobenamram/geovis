@@ -3,6 +3,7 @@ import katex from "katex";
 import "katex/dist/katex.min.css";
 import { parse as parseLatexGrammar } from "../grammar.js";
 import ASTTreeVisualization from "./ASTTreeVisualization";
+import ThreeJs3DSpace from "./ThreeJs3DSpace";
 
 interface LatexEditorProps {
     value: string;
@@ -64,6 +65,10 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
                         <pre className="ast-box">
                             {JSON.stringify(ast, null, 2)}
                         </pre>
+                    </div>
+                    <div className="threejs-section">
+                        <h2>3D Visualization</h2>
+                        <ThreeJs3DSpace ast={ast} />
                     </div>
                 </div>
                 <div className="preview-section">

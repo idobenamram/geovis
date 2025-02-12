@@ -1,13 +1,7 @@
 import React from 'react';
 import Tree from 'react-d3-tree';
 
-interface ASTNode {
-  type: string;
-  operator?: string;
-  name?: string;
-  left?: ASTNode;
-  right?: ASTNode;
-}
+import { ASTNode } from './types';
 
 interface TreeNode {
   name: string;

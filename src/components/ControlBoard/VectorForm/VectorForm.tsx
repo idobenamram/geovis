@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import _ from 'lodash';
+import { useEffect, useState } from 'react';
 
 import {
   StyledVectorForm,
-  FormHeader,
   FormField,
   FieldLabel,
   FieldError,
@@ -15,6 +13,8 @@ import { SelectedVector } from '../ControlBoard';
 
 // type definitions
 type Axes = 'x' | 'y' | 'z';
+type Values = Record<Axes, number>;
+type Errors = Record<Axes, string | null>;
 
 type Props = {
   selectedVector: SelectedVector | null;
@@ -23,17 +23,16 @@ type Props = {
 
 // component
 const VectorForm = ({ selectedVector, onSave }: Props) => {
-  const [values, setValues] = useState({ x: 1, y: 1, z: 1 });
-  const [errors, setErrors] = useState({ x: null, y: null, z: null });
+  const [values, setValues] = useState<Values>({ x: 1, y: 1, z: 1 });
+  const [errors, setErrors] = useState<Errors>({ x: null, y: null, z: null });
 
   const handleChange = (e: any, axis: Axes) => {
     e.persist()
 
     // validate input
-    const errorMessage =isNaN(e.target.value) ? 'Not a valid number' : null;
+    const errorMessage = isNaN(e.target.value) ? 'Not a valid number' : null;
     setValues((values) => ({ ...values, [axis]: e.target.value }));
     setErrors((errors) => ({ ...errors, [axis]: errorMessage }));
-
   };
 
   const handleSubmit = () => {
@@ -51,25 +50,20 @@ const VectorForm = ({ selectedVector, onSave }: Props) => {
 
   return (
     <StyledVectorForm>
-      <FormHeader>
-        Add new vector
-      </FormHeader>
-      {_.map(['x', 'y', 'z'] as Axes[], (axis) => {
-        return (
-          <FormField key={axis}>
-            <FieldLabel>{axis}</FieldLabel>
-            <FieldInput
-              name={axis}
-              value={values[axis]}
-              onChange={(e) => handleChange(e, axis)}
-            />
-            {errors[axis] && <FieldError>{errors[axis]}</FieldError>}
-          </FormField>
-        );
-      })}
+      {(['x', 'y', 'z'] as Axes[]).map((axis: Axes) => (
+        <FormField key={axis}>
+          <FieldLabel>{axis}</FieldLabel>
+          <FieldInput
+            name={axis}
+            value={values[axis]}
+            onChange={(e) => handleChange(e, axis)}
+          />
+          {errors[axis] && <FieldError>{errors[axis]}</FieldError>}
+        </FormField>
+      ))}
       <FormButton
         type='submit'
-        disabled={_.some(errors, item => item !== null)}
+        disabled={Object.values(errors).some(item => item !== null)}
         onClick={handleSubmit}
       >
         {selectedVector ? 'Update' : 'Draw'}

@@ -9,27 +9,51 @@ import {
 } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import ControlBoard, { SelectedVector } from './ControlBoard/ControlBoard';
-
+import { ASTNode, ThreeJSMultiVector } from './types';
+interface ThreeJs3DSpaceProps {
+  ast: [any[], ASTNode | null, any[]] | null;
+}
 
 export const StyledApp = styled.div`
   width: 100%;
   height: 100%;
   position: relative;
+  min-height: 400px;
+  display: flex;
 
   canvas {
     position: absolute;
     z-index: 0;
     top: 0;
     left: 0;
+    width: 100% !important;
+    height: 100% !important;
   }
 
   div {
     box-sizing: border-box;
   }
+
+  .control-board-container {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 1;
+    max-height: calc(100% - 20px);
+    overflow: auto;
+    max-width: calc(100% - 20px);
+    
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+    &::-webkit-scrollbar {
+      display: none;  /* Chrome, Safari, Opera */
+    }
+  }
 `;
 
 
-function ThreeJs3DSpace() {
+function ThreeJs3DSpace({ ast }: ThreeJs3DSpaceProps) {
   // General scene-related THREE refs
   const observed = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -40,9 +64,46 @@ function ThreeJs3DSpace() {
   const controlsRef = useRef<OrbitControls | null>(null);
   const gridRef = useRef<THREE.Group | null>(null);
 
+  // Function to get container dimensions
+  const getContainerDimensions = useCallback(() => {
+    if (!observed.current) return { width: 800, height: 600 };
+    const rect = observed.current.getBoundingClientRect();
+    return { width: rect.width, height: rect.height };
+  }, []);
+
+  // Function to update renderer and camera dimensions
+  const updateDimensions = useCallback(() => {
+    if (!observed.current) return;
+
+    const { width, height } = getContainerDimensions();
+
+    if (rendererRef.current) {
+      rendererRef.current.setSize(width, height);
+    }
+    if (labelRendererRef.current) {
+      labelRendererRef.current.setSize(width, height);
+    }
+    if (cameraRef.current) {
+      cameraRef.current.left = -width / 2;
+      cameraRef.current.right = width / 2;
+      cameraRef.current.top = height / 2;
+      cameraRef.current.bottom = -height / 2;
+      cameraRef.current.updateProjectionMatrix();
+    }
+  }, []);
+
   // state to hold list of vectors
-  const [vectors, setVectors] = useState<THREE.Object3D[]>([]);
+  const [vectors, setVectors] = useState<ThreeJSMultiVector[]>([]);
   const [gridSize, setGridSize] = useState(12);
+
+  // Map to store letter-to-vector mappings
+  const [letterVectorMap] = useState<Map<string, THREE.Vector3>>(new Map());
+
+  // Function to generate a random vector
+  const generateRandomVector = () => {
+    const randomComponent = () => (Math.random() - 0.5) * 6; // Random value between -3 and 3
+    return new THREE.Vector3(randomComponent(), randomComponent(), randomComponent());
+  };
 
   const createLabel = (
     target: THREE.Vector3,
@@ -66,7 +127,7 @@ function ThreeJs3DSpace() {
   };
 
   const drawVector = useCallback(
-    (vector: THREE.Vector3, idx: number | null) => {
+    (vector: THREE.Vector3, name: string, idx: number | null) => {
       // get length of vector
       const length = vector.length();
 
@@ -86,7 +147,7 @@ function ThreeJs3DSpace() {
       );
 
       // create label
-      const vectorLabel = createLabel(vector);
+      const vectorLabel = createLabel(vector, name);
 
       const vectorContainer = new THREE.Group();
       vectorContainer.userData.target = vector;
@@ -101,23 +162,65 @@ function ThreeJs3DSpace() {
         if (idx !== null) {
           // remove target vector first
           const targetVector = existingVectors[idx];
-          targetVector.remove(...targetVector.children);
-          sceneRef.current!.remove(targetVector);
+          targetVector.vector.remove(...targetVector.vector.children);
+          sceneRef.current!.remove(targetVector.vector);
           existingVectors = existingVectors.filter(
             (_vector, index) => index !== idx
           );
         }
 
-        return [...existingVectors, vectorContainer];
+        let newVector = { vector: vectorContainer, name: name };
+        return [...existingVectors, newVector];
       });
     },
     []
   );
 
+  // Function to process AST and create vectors
+  const processAST = useCallback((node: ASTNode | null) => {
+    if (!node) return;
+
+    // Use a stack to process nodes iteratively
+    const stack: ASTNode[] = [node];
+
+    while (stack.length > 0) {
+      const currentNode = stack.pop()!;
+
+      if (currentNode.type === "Identifier" && currentNode.name && currentNode.name.length === 1) {
+        // If we haven't generated a vector for this letter yet
+        if (!letterVectorMap.has(currentNode.name)) {
+          letterVectorMap.set(currentNode.name, generateRandomVector());
+        }
+        const vector = letterVectorMap.get(currentNode.name)!;
+        drawVector(vector, currentNode.name, null);
+      }
+
+      // Add child nodes to stack
+      if (currentNode.right) stack.push(currentNode.right);
+      if (currentNode.left) stack.push(currentNode.left);
+    }
+  }, [drawVector, letterVectorMap]);
+
+  // Effect to process AST when it changes
+  useEffect(() => {
+    if (ast) {
+      // Clear existing vectors
+      vectors.forEach(vector => {
+        vector.vector.remove(...vector.vector.children);
+        sceneRef.current!.remove(vector.vector);
+      });
+      setVectors([]);
+      
+      // Process the AST (ast[1] contains the actual AST node)
+      processAST(ast[1]);
+    }
+  }, [ast, processAST]);
+
   useEffect(() => {
     const appElement = observed.current;
 
     if (appElement) {
+      const { width, height } = getContainerDimensions();
 
       // init renderer
       const renderer = new THREE.WebGLRenderer({
@@ -125,22 +228,22 @@ function ThreeJs3DSpace() {
       });
       const bgColor = 0x263238 / 2;
       renderer.setClearColor(bgColor, 1);
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(width, height);
       renderer.setPixelRatio(window.devicePixelRatio || 1);
 
       // init label renderer
       const labelRenderer = new CSS2DRenderer();
-      labelRenderer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.setSize(width, height);
       labelRenderer.domElement.style.position = 'absolute';
       labelRenderer.domElement.style.top = '0';
       labelRenderer.domElement.style.outline = 'none';
 
       // init camera
       const camera = new THREE.OrthographicCamera(
-        -window.innerWidth / 2,
-        window.innerWidth / 2,
-        window.innerHeight / 2,
-        -window.innerHeight / 2
+        -width / 2,
+        width / 2,
+        height / 2,
+        -height / 2
       );
       camera.position.x = 5;
       camera.position.y = -20;
@@ -175,17 +278,11 @@ function ThreeJs3DSpace() {
         callbackRef.current();
       }
 
-      // resize handler
-      const onResize = () => {
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        labelRenderer.setSize(window.innerWidth, window.innerHeight);
-        camera.left = -window.innerWidth / 2;
-        camera.right = window.innerWidth / 2;
-        camera.top = window.innerHeight / 2;
-        camera.bottom = -window.innerHeight / 2;
-        camera.updateProjectionMatrix();
-      };
-      window.addEventListener('resize', onResize);
+      // resize observer
+      const resizeObserver = new ResizeObserver(() => {
+        updateDimensions();
+      });
+      resizeObserver.observe(appElement);
 
       // attach rendering canvas to DOM
       appElement.appendChild(renderer.domElement);
@@ -206,13 +303,15 @@ function ThreeJs3DSpace() {
       // trigger animation
       animate();
 
-      // add example vector helper
-      drawVector(new THREE.Vector3(3, -4, 5), null);
+      // cleanup
+      return () => {
+        resizeObserver.disconnect();
+        window.removeEventListener('resize', updateDimensions);
+        appElement.removeChild(renderer.domElement);
+        appElement.removeChild(labelRenderer.domElement);
+      };
     }
-    return () => {
-      // cleanup function
-    };
-  }, [observed, drawVector]);
+  }, [observed, drawVector, getContainerDimensions, updateDimensions]);
 
   // draw grid
   useEffect(() => {
@@ -258,13 +357,14 @@ function ThreeJs3DSpace() {
 
       // find maximum absolute scalar value of all vectors
       let maxScalar = 0;
-      vectors.forEach((vectorObj: any) => {
-        combinedBox.union(new THREE.Box3().expandByObject(vectorObj));
+      console.log('vectors', vectors);
+      vectors.forEach((vectorObj: ThreeJSMultiVector) => {
+        combinedBox.union(new THREE.Box3().expandByObject(vectorObj.vector));
         maxScalar = Math.max(
           maxScalar,
-          Math.abs(vectorObj.userData.target.x),
-          Math.abs(vectorObj.userData.target.y),
-          Math.abs(vectorObj.userData.target.z)
+          Math.abs(vectorObj.vector.userData.target.x),
+          Math.abs(vectorObj.vector.userData.target.y),
+          Math.abs(vectorObj.vector.userData.target.z)
         );
       });
 
@@ -285,7 +385,7 @@ function ThreeJs3DSpace() {
   }, [vectors]);
 
   const onSave = (idx: number | null, coords: SelectedVector['coords']) => {
-    drawVector(new THREE.Vector3(coords.x, coords.y, coords.z), idx);
+    drawVector(new THREE.Vector3(coords.x, coords.y, coords.z), "", idx);
   };
 
   const onDelete = (idx: number) => {
@@ -294,8 +394,8 @@ function ThreeJs3DSpace() {
 
       // remove target vector
       const targetVector = existingVectors[idx];
-      targetVector.remove(...targetVector.children);
-      sceneRef.current!.remove(targetVector);
+      targetVector.vector.remove(...targetVector.vector.children);
+      sceneRef.current!.remove(targetVector.vector);
       existingVectors = existingVectors.filter(
         (_vector, index) => index !== idx
       );
@@ -306,7 +406,9 @@ function ThreeJs3DSpace() {
 
   return (
     <StyledApp ref={observed}>
-      <ControlBoard vectors={vectors} onSave={onSave} onDelete={onDelete} />
+      <div className="control-board-container">
+        <ControlBoard vectors={vectors} onSave={onSave} onDelete={onDelete} />
+      </div>
     </StyledApp>
   );
 }
