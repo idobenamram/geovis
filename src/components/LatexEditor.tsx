@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 import { parse as parseLatexGrammar } from "../grammar.js";
@@ -12,6 +12,7 @@ interface LatexEditorProps {
 
 const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
     const [ast, setAst] = useState<any>(null);
+    const threejsRef = useRef<any>(null);
 
     // Called when the user types in the textarea
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -35,6 +36,14 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
     } catch (error) {
         renderedHTML = `<span style="color:red;">Error rendering LaTeX</span>`;
     }
+
+    const handleVectorAdd = (name: string) => {
+        threejsRef.current?.addVector(name);
+    };
+
+    const handleVectorRemove = (name: string) => {
+        threejsRef.current?.removeVector(name);
+    };
 
     return (
         <div className="latex-editor-container">
@@ -68,7 +77,7 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
                     </div>
                     <div className="threejs-section">
                         <h2>3D Visualization</h2>
-                        <ThreeJs3DSpace ast={ast} />
+                        <ThreeJs3DSpace ref={threejsRef} />
                     </div>
                 </div>
                 <div className="preview-section">
@@ -78,7 +87,11 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
                     </div>
                     <div className="visualization-section">
                         <h2>AST Visualization</h2>
-                        <ASTTreeVisualization ast={ast} />
+                        <ASTTreeVisualization 
+                            ast={ast} 
+                            onVectorAdd={handleVectorAdd}
+                            onVectorRemove={handleVectorRemove}
+                        />
                     </div>
                 </div>
             </div>
