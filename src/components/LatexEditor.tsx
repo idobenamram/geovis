@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import katex from "katex";
 import "katex/dist/katex.min.css";
-import { parse as parseLatexGrammar } from "../grammar.js";
+import { parse_latex } from "latex-expr-parser";
 import ASTTreeVisualization from "./ASTTreeVisualization";
 import ThreeJs3DSpace from "./ThreeJs3DSpace";
 
@@ -19,7 +19,7 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
         const input = e.target.value;
         onChange(input);
         try {
-            const parsedAST = parseLatexGrammar(input);
+            const parsedAST = JSON.parse(parse_latex(input));
             setAst(parsedAST);
         } catch (error: any) {
             setAst({ error: error.message });

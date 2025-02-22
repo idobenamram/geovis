@@ -26,6 +26,9 @@ importers:
       katex:
         specifier: ^0.16.21
         version: 0.16.21
+      latex-expr-parser:
+        specifier: file:../latex-expr-parser/pkg
+        version: file:../latex-expr-parser/pkg
       latex-utensils:
         specifier: ^6.2.0
         version: 6.2.0
@@ -62,6 +65,9 @@ importers:
       unified-latex:
         specifier: ^1.1.3
         version: 1.1.3(@babel/core@7.26.7)
+      vite-plugin-wasm:
+        specifier: ^3.4.1
+        version: 3.4.1(vite@5.4.14(@types/node@22.13.1))
     devDependencies:
       '@types/marked':
         specifier: ^5.0.2
@@ -849,6 +855,9 @@ packages:
     resolution: {integrity: sha512-XvqR7FgOHtWupfMiigNzmh+MgUVmDGU2kXZm899ZkPfcuoPuFxyHmXsgATDpFZDAXCI8tvinaVcDo8PIIJSo4A==}
     hasBin: true
 
+  latex-expr-parser@file:../latex-expr-parser/pkg:
+    resolution: {directory: ../latex-expr-parser/pkg, type: directory}
+
   latex-utensils@6.2.0:
     resolution: {integrity: sha512-j91pvKhDQlmDV8sZhmX06xgEx3QYx7z8TJTynq0O/P7fwQIBo0VG05s7rh9mLJAp6NfTBWCIgwPBFfecwCWlqA==}
     hasBin: true
@@ -1096,6 +1105,11 @@ packages:
 
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
+
+  vite-plugin-wasm@3.4.1:
+    resolution: {integrity: sha512-ja3nSo2UCkVeitltJGkS3pfQHAanHv/DqGatdI39ja6McgABlpsZ5hVgl6wuR8Qx5etY3T5qgDQhOWzc5RReZA==}
+    peerDependencies:
+      vite: ^2 || ^3 || ^4 || ^5 || ^6
 
   vite@5.4.14:
     resolution: {integrity: sha512-EK5cY7Q1D8JNhSaPKVK4pwBFvaTmZxEnoKXLG/U9gmdDcihQGNzFlgIvaxezFR4glP1LsuiedwMBqCXH3wZccA==}
@@ -1938,6 +1952,8 @@ snapshots:
     dependencies:
       commander: 8.3.0
 
+  latex-expr-parser@file:../latex-expr-parser/pkg: {}
+
   latex-utensils@6.2.0:
     optionalDependencies:
       commander: 11.1.0
@@ -2238,6 +2254,10 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
       vfile-message: 4.0.2
+
+  vite-plugin-wasm@3.4.1(vite@5.4.14(@types/node@22.13.1)):
+    dependencies:
+      vite: 5.4.14(@types/node@22.13.1)
 
   vite@5.4.14(@types/node@22.13.1):
     dependencies:

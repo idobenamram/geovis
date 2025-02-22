@@ -8,7 +8,7 @@ interface TreeNode extends RawNodeDatum {
 }
 
 interface ASTTreeVisualizationProps {
-  ast: [any[], ASTNode | null, any[]] | null;
+  ast: ASTNode | null;
   onVectorAdd?: (name: string) => void;
   onVectorRemove?: (name: string) => void;
 }
@@ -22,40 +22,54 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
   const [activeNodes, setActiveNodes] = useState<Set<string>>(new Set());
 
   // Convert AST to the format expected by react-d3-tree
-  const convertASTToTreeData = (node: ASTNode | null): TreeNode | null => {
-    if (!node) return null;
+  const convertASTToTreeData = (node: ASTNode): TreeNode | null => {
+    if (!node || typeof node !== 'object') return null;
 
-    const nodeId = node.name || `${node.type}-${node.operator || ''}`;
-    const treeNode: TreeNode = {
-      name: node.type,
-      nodeId: nodeId,
-      attributes: {},
-    };
-
-    // Add operator or name as attributes if they exist
-    if (node.operator) {
-      treeNode.attributes = { ...treeNode.attributes, operator: node.operator };
-    }
-    if (node.name) {
-      treeNode.attributes = { ...treeNode.attributes, name: node.name };
+    // Handle error case
+    if ('error' in node && typeof node.error === 'string') {
+      return {
+        name: 'Error',
+        nodeId: 'error',
+        attributes: {
+          message: node.error
+        }
+      };
     }
 
-    // Add children if they exist
-    const children: TreeNode[] = [];
-    if (node.left) {
-      const leftNode = convertASTToTreeData(node.left);
+    if ('BinaryOpNode' in node) {
+      const binOp = node.BinaryOpNode;
+      const treeNode: TreeNode = {
+        name: 'BinaryOperator',
+        nodeId: `binary-${binOp.op.kind}-${binOp.op.start}-${binOp.op.end}`,
+        attributes: {
+          operator: binOp.op.kind
+        }
+      };
+
+      // Add children
+      const children: TreeNode[] = [];
+      const leftNode = convertASTToTreeData(binOp.left);
       if (leftNode) children.push(leftNode);
-    }
-    if (node.right) {
-      const rightNode = convertASTToTreeData(node.right);
+      const rightNode = convertASTToTreeData(binOp.right);
       if (rightNode) children.push(rightNode);
+      if (children.length > 0) {
+        treeNode.children = children;
+      }
+
+      return treeNode;
     }
 
-    if (children.length > 0) {
-      treeNode.children = children;
+    if ('Identifier' in node) {
+      return {
+        name: 'Identifier',
+        nodeId: `id-${node.Identifier}`,
+        attributes: {
+          name: node.Identifier
+        }
+      };
     }
 
-    return treeNode;
+    return null;
   };
 
   const handleNodeClick = useCallback((nodeDatum: TreeNode) => {
@@ -80,9 +94,11 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
     });
   }, [onVectorAdd, onVectorRemove]);
 
-  // Extract the actual AST node from the array structure
-  const actualASTNode = ast ? ast[1] : null;
-  const treeData = convertASTToTreeData(actualASTNode);
+  if (!ast) {
+    return <div>No AST data available</div>;
+  }
+
+  const treeData = convertASTToTreeData(ast);
 
   if (!treeData) {
     return <div>No AST data available</div>;
