@@ -1,0 +1,7 @@
+[package]
+name = "geo-calc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+latex-expr-parser = { path = "../../../latex-expr-parser" }
