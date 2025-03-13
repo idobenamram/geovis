@@ -6,9 +6,18 @@
 pub mod r300;
 use latex_expr_parser::{ASTNode, TokenKind};
 use r300::R300;
+use serde_wasm_bindgen::from_value;
 use std::{collections::HashMap, ops::Mul};
+use wasm_bindgen::prelude::*;
 
-pub fn calculate_ast_expression(ast: &ASTNode, vars: &HashMap<String, R300>) -> R300 {
+#[wasm_bindgen]
+pub fn calculate_expression(expr: &str, vars: JsValue) -> R300 {
+    let ast = serde_json::from_str::<ASTNode>(expr).unwrap();
+    let vars: HashMap<String, R300> = from_value(vars).unwrap();
+    calculate_ast_expression(&ast, &vars)
+}
+
+fn calculate_ast_expression(ast: &ASTNode, vars: &HashMap<String, R300>) -> R300 {
     match ast {
         ASTNode::Int { value } => R300::new(*value as f64, 0),
         ASTNode::Identifier { name } => vars[name].clone(),
@@ -44,8 +53,12 @@ mod tests {
     fn test_calculate_ast_expression() {
         let ast = ASTNode::BinaryOpNode {
             op: TokenKind::Plus,
-            left: Box::new(ASTNode::Identifier { name: "a".to_string() }),
-            right: Box::new(ASTNode::Identifier { name: "b".to_string() }),
+            left: Box::new(ASTNode::Identifier {
+                name: "a".to_string(),
+            }),
+            right: Box::new(ASTNode::Identifier {
+                name: "b".to_string(),
+            }),
         };
         let mut vars = HashMap::new();
         vars.insert("a".to_string(), R300::vector(1.0, 0.0, 0.0));

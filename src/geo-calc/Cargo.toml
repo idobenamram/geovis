@@ -3,5 +3,14 @@ name = "geo-calc"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
-latex-expr-parser = { path = "../../../latex-expr-parser" }
+latex-expr-parser = { path = "../../../latex-expr-parser", features = [
+    "serde",
+] }
+wasm-bindgen = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde-wasm-bindgen = "0.4"

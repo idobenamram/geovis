@@ -1,13 +1,16 @@
+use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 /// taken from https://bivector.net/tools.html?p=3&q=0&r=0
 // Written by a generator written by enki.
 use std::fmt;
 use std::ops::{Add, BitAnd, BitOr, BitXor, Index, IndexMut, Mul, Not, Sub};
+use wasm_bindgen::prelude::*;
 
 const basis: &'static [&'static str] = &["1", "e1", "e2", "e3", "e12", "e13", "e23", "e123"];
 const basis_count: usize = basis.len();
 
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[wasm_bindgen]
+#[derive(Clone, Copy, PartialEq, Debug, Serialize, Deserialize)]
 pub struct R300 {
     mvec: [f64; basis_count],
 }
