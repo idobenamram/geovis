@@ -17,7 +17,10 @@ interface ThreeJs3DSpaceProps {
 
 export interface ThreeJs3DSpaceRef {
   addVector: (name: string) => void;
+  addVectorWithPosition: (name: string, position: { x: number, y: number, z: number }) => void;
   removeVector: (name: string) => void;
+  hasVector: (name: string) => boolean;
+  getVectorNames: () => string[];
 }
 
 export const StyledApp = styled.div`
@@ -184,6 +187,19 @@ const ThreeJs3DSpace = forwardRef<ThreeJs3DSpaceRef, ThreeJs3DSpaceProps>(({ cla
     drawVector(vector, name, null);
   }, [drawVector]);
 
+  const addVectorWithPosition = useCallback((name: string, position: { x: number, y: number, z: number }) => {
+    const vector = new THREE.Vector3(position.x, position.y, position.z);
+    drawVector(vector, name, null);
+  }, [drawVector]);
+
+  const hasVector = useCallback((name: string) => {
+    return vectors.some(v => v.name === name);
+  }, [vectors]);
+
+  const getVectorNames = useCallback(() => {
+    return vectors.map(v => v.name);
+  }, [vectors]);
+
   const removeVector = useCallback((name: string) => {
     setVectors((vectors) => {
       const idx = vectors.findIndex(v => v.name === name);
@@ -200,8 +216,11 @@ const ThreeJs3DSpace = forwardRef<ThreeJs3DSpaceRef, ThreeJs3DSpaceProps>(({ cla
   // Expose methods via ref
   useImperativeHandle(ref, () => ({
     addVector,
-    removeVector
-  }), [addVector, removeVector]);
+    addVectorWithPosition,
+    removeVector,
+    hasVector,
+    getVectorNames
+  }), [addVector, addVectorWithPosition, removeVector, hasVector, getVectorNames]);
 
   useEffect(() => {
     const appElement = observed.current;
@@ -278,7 +297,7 @@ const ThreeJs3DSpace = forwardRef<ThreeJs3DSpaceRef, ThreeJs3DSpaceProps>(({ cla
       appElement.appendChild(labelRenderer.domElement);
 
       // define default render callback
-      callbackRef.current = () => {};
+      callbackRef.current = () => { };
 
       // update refs
       sceneRef.current = scene;
@@ -338,38 +357,38 @@ const ThreeJs3DSpace = forwardRef<ThreeJs3DSpaceRef, ThreeJs3DSpaceProps>(({ cla
   }, [gridSize]);
 
   // zoom to fit
-//   useEffect(() => {
-//     if (cameraRef.current) {
-//       const combinedBox = new THREE.Box3();
+  //   useEffect(() => {
+  //     if (cameraRef.current) {
+  //       const combinedBox = new THREE.Box3();
 
-//       // find maximum absolute scalar value of all vectors
-//       let maxScalar = 0;
-//       console.log('vectors', vectors);
-//       vectors.forEach((vectorObj: ThreeJSMultiVector) => {
-//         combinedBox.union(new THREE.Box3().expandByObject(vectorObj.vector));
-//         maxScalar = Math.max(
-//           maxScalar,
-//           Math.abs(vectorObj.vector.userData.target.x),
-//           Math.abs(vectorObj.vector.userData.target.y),
-//           Math.abs(vectorObj.vector.userData.target.z)
-//         );
-//       });
+  //       // find maximum absolute scalar value of all vectors
+  //       let maxScalar = 0;
+  //       console.log('vectors', vectors);
+  //       vectors.forEach((vectorObj: ThreeJSMultiVector) => {
+  //         combinedBox.union(new THREE.Box3().expandByObject(vectorObj.vector));
+  //         maxScalar = Math.max(
+  //           maxScalar,
+  //           Math.abs(vectorObj.vector.userData.target.x),
+  //           Math.abs(vectorObj.vector.userData.target.y),
+  //           Math.abs(vectorObj.vector.userData.target.z)
+  //         );
+  //       });
 
-//       // adjust camera zoom
-//       cameraRef.current.zoom =
-//         Math.min(
-//           window.innerWidth / (combinedBox.max.x - combinedBox.min.x),
-//           window.innerHeight / (combinedBox.max.y - combinedBox.min.y)
-//         ) * 0.3;
-//       cameraRef.current.updateProjectionMatrix();
+  //       // adjust camera zoom
+  //       cameraRef.current.zoom =
+  //         Math.min(
+  //           window.innerWidth / (combinedBox.max.x - combinedBox.min.x),
+  //           window.innerHeight / (combinedBox.max.y - combinedBox.min.y)
+  //         ) * 0.3;
+  //       cameraRef.current.updateProjectionMatrix();
 
-//       // adjust grid size if needed (round up to nearest multiple of 4)
-//       let targetGridSize = Math.ceil((maxScalar * 2) / 4.0) * 4.0;
-//       // make sure grid size is at least 12
-//       if (targetGridSize < 12) targetGridSize = 12;
-//       if (isFinite(targetGridSize)) setGridSize(targetGridSize);
-//     }
-//   }, [vectors]);
+  //       // adjust grid size if needed (round up to nearest multiple of 4)
+  //       let targetGridSize = Math.ceil((maxScalar * 2) / 4.0) * 4.0;
+  //       // make sure grid size is at least 12
+  //       if (targetGridSize < 12) targetGridSize = 12;
+  //       if (isFinite(targetGridSize)) setGridSize(targetGridSize);
+  //     }
+  //   }, [vectors]);
 
   const onSave = (idx: number | null, coords: SelectedVector['coords']) => {
     drawVector(new THREE.Vector3(coords.x, coords.y, coords.z), "", idx);

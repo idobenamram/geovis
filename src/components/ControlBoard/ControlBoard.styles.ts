@@ -45,11 +45,11 @@ export const SectionHeader = styled.div`
   }
 `;
 
-export const SectionContent = styled.div<{ isOpen: boolean }>`
+export const SectionContent = styled.div<{ $isOpen: boolean }>`
   display: grid;
   grid-gap: 0.2rem;
   overflow: hidden;
-  max-height: ${props => props.isOpen ? '300px' : '0'};
+  max-height: ${props => props.$isOpen ? '300px' : '0'};
   transition: max-height 0.2s ease-in-out;
-  padding: ${props => props.isOpen ? '0.2rem 0' : '0'};
+  padding: ${props => props.$isOpen ? '0.2rem 0' : '0'};
 `;

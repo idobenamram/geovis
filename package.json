@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "build-geo-calc": "cd src/geo-calc && wasm-pack build --target bundler",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
@@ -15,6 +16,7 @@
     "highlight.js": "^11.9.0",
     "katex": "^0.16.21",
     "latex-expr-parser": "file:../latex-expr-parser/pkg",
+    "geo-calc": "file:src/geo-calc/pkg",
     "latex-utensils": "^6.2.0",
     "marked": "^12.0.0",
     "monaco-editor": "^0.45.0",

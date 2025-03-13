@@ -1,7 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 import { parse_latex } from "latex-expr-parser";
+import { find_identifiers, R300, calculate_expression } from "geo-calc";
 import ASTTreeVisualization from "./ASTTreeVisualization";
 import ThreeJs3DSpace from "./ThreeJs3DSpace";
 
@@ -13,14 +14,68 @@ interface LatexEditorProps {
 const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
     const [ast, setAst] = useState<any>(null);
     const threejsRef = useRef<any>(null);
+    const [identifiers, setIdentifiers] = useState<[string, R300][]>([]);
+
+    const createIdentifiers = (ast: any) => {
+        // Find all identifiers in the AST
+        const ids = find_identifiers(ast);
+        const uniqueIds = new Set(ids);
+
+        // Create random vectors for new identifiers
+        const identifiers: [string, R300][] = [];
+
+        uniqueIds.forEach(id => {
+            // Create a random vector for this identifier
+            const x = Math.random() * 10 - 5; // Range: -5 to 5
+            const y = Math.random() * 10 - 5;
+            const z = Math.random() * 10 - 5;
+
+            // Create an R300 vector and add it to the array of tuples
+            const vector = R300.vector(x, y, z);
+            identifiers.push([id, vector]);
+        });
+
+
+        // Update the identifiers map
+        setIdentifiers(identifiers);
+    }
+
 
     // Called when the user types in the textarea
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const input = e.target.value;
         onChange(input);
         try {
-            const parsedAST = JSON.parse(parse_latex(input));
-            setAst(parsedAST);
+            const ast = parse_latex(input);
+            createIdentifiers(ast);
+            console.log(ast, identifiers);
+
+            try {
+                const vars = Object.fromEntries(identifiers.map(([key, value]) => {
+                    console.log("key", key, "value", value);
+                    console.log("Prototype of r300:", Object.getPrototypeOf(value));
+                    console.log("Methods:", Object.keys(Object.getPrototypeOf(value)));
+
+                    // console.log("value.display()", value.display());
+                    // Parse the JSON string returned by to_json() into an object
+                    return [key, JSON.parse(value.toJson())]
+                }));
+
+                // Use the vars object
+                console.log("vars", vars);
+                // const calculated = calculate_expression(ast, vars);
+                // console.log("calculated result:", calculated);
+            }
+            catch (error: any) {
+                console.log("error", error);
+                const vars = {};
+            }
+
+            // console.log("vars", vars);
+            // const calculated = calculate_expression(ast, vars);
+            console.log("after calculation");
+            setAst(null);
+            console.log(ast);
         } catch (error: any) {
             setAst({ error: error.message });
         }
@@ -87,8 +142,8 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
                     </div>
                     <div className="visualization-section">
                         <h2>AST Visualization</h2>
-                        <ASTTreeVisualization 
-                            ast={ast} 
+                        <ASTTreeVisualization
+                            ast={ast}
                             onVectorAdd={handleVectorAdd}
                             onVectorRemove={handleVectorRemove}
                         />

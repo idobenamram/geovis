@@ -14,6 +14,9 @@ importers:
       '@btree/react':
         specifier: ^0.1.1
         version: 0.1.1
+      geo-calc:
+        specifier: file:src/geo-calc/pkg
+        version: file:src/geo-calc/pkg
       highlight.js:
         specifier: ^11.9.0
         version: 11.11.1
@@ -628,6 +631,9 @@ packages:
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
+
+  geo-calc@file:src/geo-calc/pkg:
+    resolution: {directory: src/geo-calc/pkg, type: directory}
 
   globals@11.12.0:
     resolution: {integrity: sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==}
@@ -1365,6 +1371,8 @@ snapshots:
     optional: true
 
   gensync@1.0.0-beta.2: {}
+
+  geo-calc@file:src/geo-calc/pkg: {}
 
   globals@11.12.0: {}
 

@@ -2,9 +2,11 @@ import React, { useState, useCallback } from 'react';
 import Tree, { RawNodeDatum, } from 'react-d3-tree';
 
 import { ASTNode } from './types';
+import { R300 } from 'geo-calc';
 
 interface TreeNode extends RawNodeDatum {
   nodeId: string;
+  value: R300;
 }
 
 interface ASTTreeVisualizationProps {
@@ -13,10 +15,10 @@ interface ASTTreeVisualizationProps {
   onVectorRemove?: (name: string) => void;
 }
 
-const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({ 
+const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
   ast,
   onVectorAdd,
-  onVectorRemove 
+  onVectorRemove
 }) => {
   // Track which nodes have vectors
   const [activeNodes, setActiveNodes] = useState<Set<string>>(new Set());
@@ -30,6 +32,7 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
       return {
         name: 'Error',
         nodeId: 'error',
+        value: R300.vector(0.0, 0.0, 0.0),
         attributes: {
           message: node.error
         }
@@ -39,10 +42,11 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
     if ('BinaryOpNode' in node) {
       const binOp = node.BinaryOpNode;
       const treeNode: TreeNode = {
-        name: 'BinaryOperator',
-        nodeId: `binary-${binOp.op.kind}-${binOp.op.start}-${binOp.op.end}`,
+        name: `${binOp.op}`,
+        nodeId: `binary-${binOp.op}-${binOp.left}-${binOp.right}`,
+        value: binOp.value,
         attributes: {
-          operator: binOp.op.kind
+          value: binOp.value.display()
         }
       };
 
@@ -59,15 +63,47 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
       return treeNode;
     }
 
-    if ('Identifier' in node) {
-      return {
-        name: 'Identifier',
-        nodeId: `id-${node.Identifier}`,
+    if ('UnaryOpNode' in node) {
+      const unaryOp = node.UnaryOpNode;
+      const treeNode: TreeNode = {
+        name: `${unaryOp.op}`,
+        nodeId: `unary-${unaryOp.op}-${unaryOp.operand}`,
+        value: unaryOp.value,
         attributes: {
-          name: node.Identifier
+          value: unaryOp.value.display()
+        }
+      };
+
+      // Add child
+      const operandNode = convertASTToTreeData(unaryOp.operand);
+      if (operandNode) {
+        treeNode.children = [operandNode];
+      }
+
+      return treeNode;
+    }
+
+    if ('Int' in node) {
+      return {
+        name: `${node.Int}`,
+        nodeId: `int-${node.Int}`,
+        value: node.value,
+        attributes: {
+          value: node.value.display()
         }
       };
     }
+    if ('Identifier' in node) {
+      return {
+        name: node.Identifier,
+        nodeId: `id-${node.Identifier}`,
+        value: node.value,
+        attributes: {
+          value: node.value.display()
+        }
+      };
+    }
+
 
     return null;
   };
@@ -117,12 +153,12 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
           const node = nodeDatum as RawNodeDatum as TreeNode;
           const name = node.attributes?.name;
           const isIdentifier = node.name === 'Identifier' && name && typeof name === 'string' && name.length === 1;
-          
+
           return (
             <g>
-              <circle 
-                r="20" 
-                fill={activeNodes.has(node.nodeId) ? '#4CAF50' : '#88c999'} 
+              <circle
+                r="20"
+                fill={activeNodes.has(node.nodeId) ? '#4CAF50' : '#88c999'}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleNodeClick(node);

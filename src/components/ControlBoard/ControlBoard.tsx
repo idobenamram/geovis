@@ -50,7 +50,7 @@ const ControlBoard = ({ vectors, onSave, onDelete }: Props) => {
           <span>Vectors</span>
           <span className={`toggle-icon ${!isVectorListOpen ? 'collapsed' : ''}`}>▼</span>
         </SectionHeader>
-        <SectionContent isOpen={isVectorListOpen}>
+        <SectionContent $isOpen={isVectorListOpen}>
           <VectorList
             vectors={vectors}
             selectedVector={selectedVector}
@@ -65,7 +65,7 @@ const ControlBoard = ({ vectors, onSave, onDelete }: Props) => {
           <span>Add new vector</span>
           <span className={`toggle-icon ${!isVectorFormOpen ? 'collapsed' : ''}`}>▼</span>
         </SectionHeader>
-        <SectionContent isOpen={isVectorFormOpen}>
+        <SectionContent $isOpen={isVectorFormOpen}>
           <VectorForm selectedVector={selectedVector} onSave={handleSave} />
         </SectionContent>
       </Section>

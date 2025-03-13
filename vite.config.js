@@ -9,7 +9,7 @@ export default defineConfig({
     },
     optimizeDeps: {
         include: ['monaco-editor/esm/vs/editor/editor.worker'],
-        exclude: ['latex-expr-parser']
+        exclude: ['latex-expr-parser', 'geo-calc']
     },
     build: {
         target: 'esnext',
