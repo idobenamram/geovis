@@ -1,0 +1,49 @@
+---
+source: src/lib.rs
+expression: result
+---
+BinaryOpNode {
+    op: Plus,
+    left: Identifier {
+        name: "a",
+        value: R300 {
+            mvec: [
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+            ],
+        },
+    },
+    right: Identifier {
+        name: "b",
+        value: R300 {
+            mvec: [
+                0.0,
+                2.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+            ],
+        },
+    },
+    value: R300 {
+        mvec: [
+            0.0,
+            3.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ],
+    },
+}

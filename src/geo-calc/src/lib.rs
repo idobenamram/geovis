@@ -6,25 +6,91 @@
 pub mod r300;
 use latex_expr_parser::{ASTNode, TokenKind};
 use r300::R300;
+use serde::Serialize;
 use serde_wasm_bindgen::from_value;
 use std::{collections::HashMap, ops::Mul};
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
-pub fn calculate_expression(expr: &str, vars: JsValue) -> R300 {
-    let ast = serde_json::from_str::<ASTNode>(expr).unwrap();
-    let vars: HashMap<String, R300> = from_value(vars).unwrap();
-    calculate_ast_expression(&ast, &vars)
+
+// TODO: this duplication is not my favorite
+#[derive(Debug, Serialize)]
+pub enum AstNodeWithValue {
+    Identifier {
+        name: String,
+        value: R300,
+    },
+    Int {
+        value: R300,
+    },
+    BinaryOpNode {
+        op: TokenKind,
+        left: Box<AstNodeWithValue>,
+        right: Box<AstNodeWithValue>,
+        value: R300,
+    },
+    UnaryOpNode {
+        op: TokenKind,
+        operand: Box<AstNodeWithValue>,
+        value: R300,
+    },
 }
 
-fn calculate_ast_expression(ast: &ASTNode, vars: &HashMap<String, R300>) -> R300 {
+impl AstNodeWithValue {
+    pub fn value(&self) -> R300 {
+        match self {
+            AstNodeWithValue::Int { value } => value.clone(),
+            AstNodeWithValue::Identifier { value, .. } => value.clone(),
+            AstNodeWithValue::BinaryOpNode { value, .. } => value.clone(),
+            AstNodeWithValue::UnaryOpNode { value, .. } => value.clone(),
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub fn find_identifiers(expr: &str) -> Vec<String> {
+    let ast = serde_json::from_str::<ASTNode>(expr).unwrap();
+    let mut identifiers = Vec::new();
+    find_ast_identifiers(&ast, &mut identifiers);
+    identifiers
+}
+
+pub fn find_ast_identifiers(ast: &ASTNode, identifiers: &mut Vec<String>) {
     match ast {
-        ASTNode::Int { value } => R300::new(*value as f64, 0),
-        ASTNode::Identifier { name } => vars[name].clone(),
+        ASTNode::Identifier { name } => identifiers.push(name.clone()),
+        ASTNode::BinaryOpNode { left, right, op: _ } => {
+            find_ast_identifiers(left, identifiers);
+            find_ast_identifiers(right, identifiers);
+        }
+        ASTNode::UnaryOpNode { operand, op: _ } => {
+            find_ast_identifiers(operand, identifiers);
+        }
+        _ => {}
+    }
+}
+
+#[wasm_bindgen]
+pub fn calculate_expression(expr: &str, vars: JsValue) -> String {
+    let ast = serde_json::from_str::<ASTNode>(expr).unwrap();
+    let vars: HashMap<String, R300> = from_value(vars).unwrap();
+    let calculated = calculate_ast_expression(&ast, &vars);
+    serde_json::to_string(&calculated).unwrap()
+}
+
+fn calculate_ast_expression(ast: &ASTNode, vars: &HashMap<String, R300>) -> AstNodeWithValue {
+    match ast {
+        ASTNode::Int { value } => AstNodeWithValue::Int {
+            value: R300::new(*value as f64, 0),
+        },
+        ASTNode::Identifier { name } => AstNodeWithValue::Identifier {
+            name: name.clone(),
+            value: vars[name].clone(),
+        },
         ASTNode::BinaryOpNode { op, left, right } => {
-            let left_val = calculate_ast_expression(left, vars);
-            let right_val = calculate_ast_expression(right, vars);
-            match op {
+            let left = calculate_ast_expression(left, vars);
+            let right = calculate_ast_expression(right, vars);
+            let left_val = left.value();
+            let right_val = right.value();
+            let value = match op {
                 TokenKind::Plus => left_val.add(right_val),
                 TokenKind::Minus => left_val.sub(right_val),
                 TokenKind::Multiply => left_val.mul(right_val),
@@ -32,14 +98,26 @@ fn calculate_ast_expression(ast: &ASTNode, vars: &HashMap<String, R300>) -> R300
                 TokenKind::Wedge => left_val.wedge(right_val),
                 TokenKind::Frac => left_val.divide(right_val),
                 _ => panic!("Unsupported binary operator: {:?}", op),
+            };
+            AstNodeWithValue::BinaryOpNode {
+                op: *op,
+                left: Box::new(left),
+                right: Box::new(right),
+                value,
             }
         }
         ASTNode::UnaryOpNode { op, operand } => {
-            let operand_val = calculate_ast_expression(operand, vars);
-            match op {
+            let operand = calculate_ast_expression(operand, vars);
+            let operand_val = operand.value();
+            let value = match op {
                 TokenKind::Plus => operand_val,
                 TokenKind::Minus => -1.0 * operand_val,
                 _ => panic!("Unsupported unary operator: {:?}", op),
+            };
+            AstNodeWithValue::UnaryOpNode {
+                op: *op,
+                operand: Box::new(operand),
+                value,
             }
         }
     }
@@ -64,6 +142,7 @@ mod tests {
         vars.insert("a".to_string(), R300::vector(1.0, 0.0, 0.0));
         vars.insert("b".to_string(), R300::vector(2.0, 0.0, 0.0));
         let result = calculate_ast_expression(&ast, &vars);
-        assert_eq!(result, R300::vector(3.0, 0.0, 0.0));
+
+        insta::assert_debug_snapshot!(result);
     }
 }

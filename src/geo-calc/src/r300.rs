@@ -27,8 +27,12 @@ impl R300 {
         ret.mvec[idx] = f;
         ret
     }
+}
 
-    pub const fn vector(e1_val: f64, e2_val: f64, e3_val: f64) -> Self {
+#[wasm_bindgen]
+impl R300 {
+
+    pub fn vector(e1_val: f64, e2_val: f64, e3_val: f64) -> Self {
         let mut ret = Self::zero();
         ret.mvec[1] = e1_val;
         ret.mvec[2] = e2_val;
@@ -36,12 +40,27 @@ impl R300 {
         ret
     }
 
-    pub const fn bivector(e12_val: f64, e13_val: f64, e23_val: f64) -> Self {
+    pub fn bivector(e12_val: f64, e13_val: f64, e23_val: f64) -> Self {
         let mut ret = Self::zero();
         ret.mvec[4] = e12_val;
         ret.mvec[5] = e13_val;
         ret.mvec[6] = e23_val;
         ret
+    }
+
+    pub fn display(&self) -> String {
+        let mut parts = Vec::new();
+        
+        for (i, prefix) in basis.iter().enumerate() {
+            parts.push(format!("{}: {}", prefix, self.mvec[i]));
+        }
+        format!("R300({})", parts.join(", "))
+
+    }
+
+    #[wasm_bindgen(js_name = toJson)]
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(self).unwrap()
     }
 }
 
