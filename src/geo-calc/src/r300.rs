@@ -160,32 +160,75 @@ impl R300 {
         res[7] = -a[7];
         res
     }
-}
+    pub fn bracket(self, blade: u8) -> R300 {
+        R300::new(self[blade as usize], blade as usize)
+    }
 
-impl Not for R300 {
-    type Output = R300;
+    // taken from New Foundation for Classical Mechanics - David Hestenes - page 61 (Magnitude)
+    pub fn magnitude_squared(self: Self) -> f64 {
+        let scalar_part = (self * self.Reverse())[0];
 
-    fn not(self: Self) -> R300 {
+        scalar_part
+    }
+
+    pub fn norm(self: Self) -> f64 {
+        let scalar_part = (self * self.Conjugate())[0];
+
+        scalar_part.abs().sqrt()
+    }
+
+    pub fn inorm(self: Self) -> f64 {
+        self.Dual().norm()
+    }
+
+    pub fn normalized(self: Self) -> Self {
+        self * (1.0 / self.norm())
+    }
+
+    pub fn dot(self: Self, b: Self) -> R300 {
         let mut res = R300::zero();
         let a = self;
-        res[0] = -a[7];
-        res[1] = -a[6];
-        res[2] = a[5];
-        res[3] = -a[4];
-        res[4] = a[3];
-        res[5] = -a[2];
-        res[6] = a[1];
-        res[7] = a[0];
+        res[0] = b[0] * a[0] + b[1] * a[1] + b[2] * a[2] + b[3] * a[3]
+            - b[4] * a[4]
+            - b[5] * a[5]
+            - b[6] * a[6]
+            - b[7] * a[7];
+        res[1] = b[1] * a[0] + b[0] * a[1] - b[4] * a[2] - b[5] * a[3] + b[2] * a[4] + b[3] * a[5]
+            - b[7] * a[6]
+            - b[6] * a[7];
+        res[2] = b[2] * a[0] + b[4] * a[1] + b[0] * a[2] - b[6] * a[3] - b[1] * a[4]
+            + b[7] * a[5]
+            + b[3] * a[6]
+            + b[5] * a[7];
+        res[3] = b[3] * a[0] + b[5] * a[1] + b[6] * a[2] + b[0] * a[3]
+            - b[7] * a[4]
+            - b[1] * a[5]
+            - b[2] * a[6]
+            - b[4] * a[7];
+        res[4] = b[4] * a[0] + b[7] * a[3] + b[0] * a[4] + b[3] * a[7];
+        res[5] = b[5] * a[0] - b[7] * a[2] + b[0] * a[5] - b[2] * a[7];
+        res[6] = b[6] * a[0] + b[7] * a[1] + b[0] * a[6] + b[1] * a[7];
+        res[7] = b[7] * a[0] + b[0] * a[7];
         res
     }
-}
 
-// Mul
-// The geometric product.
-impl Mul for R300 {
-    type Output = R300;
+    pub fn wedge(self: Self, b: Self) -> R300 {
+        let mut res = R300::zero();
+        let a = self;
+        res[0] = b[0] * a[0];
+        res[1] = b[1] * a[0] + b[0] * a[1];
+        res[2] = b[2] * a[0] + b[0] * a[2];
+        res[3] = b[3] * a[0] + b[0] * a[3];
+        res[4] = b[4] * a[0] + b[2] * a[1] - b[1] * a[2] + b[0] * a[4];
+        res[5] = b[5] * a[0] + b[3] * a[1] - b[1] * a[3] + b[0] * a[5];
+        res[6] = b[6] * a[0] + b[3] * a[2] - b[2] * a[3] + b[0] * a[6];
+        res[7] = b[7] * a[0] + b[6] * a[1] - b[5] * a[2] + b[4] * a[3] + b[3] * a[4] - b[2] * a[5]
+            + b[1] * a[6]
+            + b[0] * a[7];
+        res
+    }
 
-    fn mul(self: R300, b: R300) -> R300 {
+    pub fn geometric_product(self: Self, b: Self) -> R300 {
         let mut res = R300::zero();
         let a = self;
         res[0] = b[0] * a[0] + b[1] * a[1] + b[2] * a[2] + b[3] * a[3]
@@ -220,6 +263,66 @@ impl Mul for R300 {
             + b[0] * a[7];
         res
     }
+
+    pub fn add(self: R300, b: R300) -> R300 {
+        let mut res = R300::zero();
+        let a = self;
+        res[0] = a[0] + b[0];
+        res[1] = a[1] + b[1];
+        res[2] = a[2] + b[2];
+        res[3] = a[3] + b[3];
+        res[4] = a[4] + b[4];
+        res[5] = a[5] + b[5];
+        res[6] = a[6] + b[6];
+        res[7] = a[7] + b[7];
+        res
+    }
+
+    pub fn sub(self: R300, b: R300) -> R300 {
+        let mut res = R300::zero();
+        let a = self;
+        res[0] = a[0] - b[0];
+        res[1] = a[1] - b[1];
+        res[2] = a[2] - b[2];
+        res[3] = a[3] - b[3];
+        res[4] = a[4] - b[4];
+        res[5] = a[5] - b[5];
+        res[6] = a[6] - b[6];
+        res[7] = a[7] - b[7];
+        res
+    }
+
+    pub fn divide(self: R300, b: R300) -> R300 {
+        self.geometric_product(b.Reverse() * (1.0 / self.norm() * b.norm()))
+    }
+}
+
+impl Not for R300 {
+    type Output = R300;
+
+    fn not(self: Self) -> R300 {
+        let mut res = R300::zero();
+        let a = self;
+        res[0] = -a[7];
+        res[1] = -a[6];
+        res[2] = a[5];
+        res[3] = -a[4];
+        res[4] = a[3];
+        res[5] = -a[2];
+        res[6] = a[1];
+        res[7] = a[0];
+        res
+    }
+}
+
+// Mul
+// The geometric product.
+impl Mul for R300 {
+    type Output = R300;
+
+    fn mul(self: R300, b: R300) -> R300 {
+        self.geometric_product(b)
+    }
 }
 
 // Wedge
@@ -228,19 +331,17 @@ impl BitXor for R300 {
     type Output = R300;
 
     fn bitxor(self: R300, b: R300) -> R300 {
-        let mut res = R300::zero();
-        let a = self;
-        res[0] = b[0] * a[0];
-        res[1] = b[1] * a[0] + b[0] * a[1];
-        res[2] = b[2] * a[0] + b[0] * a[2];
-        res[3] = b[3] * a[0] + b[0] * a[3];
-        res[4] = b[4] * a[0] + b[2] * a[1] - b[1] * a[2] + b[0] * a[4];
-        res[5] = b[5] * a[0] + b[3] * a[1] - b[1] * a[3] + b[0] * a[5];
-        res[6] = b[6] * a[0] + b[3] * a[2] - b[2] * a[3] + b[0] * a[6];
-        res[7] = b[7] * a[0] + b[6] * a[1] - b[5] * a[2] + b[4] * a[3] + b[3] * a[4] - b[2] * a[5]
-            + b[1] * a[6]
-            + b[0] * a[7];
-        res
+        self.wedge(b)
+    }
+}
+
+// Dot
+// The inner product.
+impl BitOr for R300 {
+    type Output = R300;
+
+    fn bitor(self: R300, b: R300) -> R300 {
+        self.dot(b)
     }
 }
 
@@ -268,56 +369,13 @@ impl BitXor for R300 {
 //     }
 // }
 
-// Dot
-// The inner product.
-impl BitOr for R300 {
-    type Output = R300;
-
-    fn bitor(self: R300, b: R300) -> R300 {
-        let mut res = R300::zero();
-        let a = self;
-        res[0] = b[0] * a[0] + b[1] * a[1] + b[2] * a[2] + b[3] * a[3]
-            - b[4] * a[4]
-            - b[5] * a[5]
-            - b[6] * a[6]
-            - b[7] * a[7];
-        res[1] = b[1] * a[0] + b[0] * a[1] - b[4] * a[2] - b[5] * a[3] + b[2] * a[4] + b[3] * a[5]
-            - b[7] * a[6]
-            - b[6] * a[7];
-        res[2] = b[2] * a[0] + b[4] * a[1] + b[0] * a[2] - b[6] * a[3] - b[1] * a[4]
-            + b[7] * a[5]
-            + b[3] * a[6]
-            + b[5] * a[7];
-        res[3] = b[3] * a[0] + b[5] * a[1] + b[6] * a[2] + b[0] * a[3]
-            - b[7] * a[4]
-            - b[1] * a[5]
-            - b[2] * a[6]
-            - b[4] * a[7];
-        res[4] = b[4] * a[0] + b[7] * a[3] + b[0] * a[4] + b[3] * a[7];
-        res[5] = b[5] * a[0] - b[7] * a[2] + b[0] * a[5] - b[2] * a[7];
-        res[6] = b[6] * a[0] + b[7] * a[1] + b[0] * a[6] + b[1] * a[7];
-        res[7] = b[7] * a[0] + b[0] * a[7];
-        res
-    }
-}
-
 // Add
 // Multivector addition
 impl Add for R300 {
     type Output = R300;
 
     fn add(self: R300, b: R300) -> R300 {
-        let mut res = R300::zero();
-        let a = self;
-        res[0] = a[0] + b[0];
-        res[1] = a[1] + b[1];
-        res[2] = a[2] + b[2];
-        res[3] = a[3] + b[3];
-        res[4] = a[4] + b[4];
-        res[5] = a[5] + b[5];
-        res[6] = a[6] + b[6];
-        res[7] = a[7] + b[7];
-        res
+        self.add(b)
     }
 }
 
@@ -327,17 +385,7 @@ impl Sub for R300 {
     type Output = R300;
 
     fn sub(self: R300, b: R300) -> R300 {
-        let mut res = R300::zero();
-        let a = self;
-        res[0] = a[0] - b[0];
-        res[1] = a[1] - b[1];
-        res[2] = a[2] - b[2];
-        res[3] = a[3] - b[3];
-        res[4] = a[4] - b[4];
-        res[5] = a[5] - b[5];
-        res[6] = a[6] - b[6];
-        res[7] = a[7] - b[7];
-        res
+        self.sub(b)
     }
 }
 
@@ -459,26 +507,4 @@ impl Sub<f64> for R300 {
         res[7] = a[7];
         res
     }
-}
-
-impl R300 {
-    pub fn norm(self: Self) -> f64 {
-        let scalar_part = (self * self.Conjugate())[0];
-
-        scalar_part.abs().sqrt()
-    }
-
-    pub fn inorm(self: Self) -> f64 {
-        self.Dual().norm()
-    }
-
-    pub fn normalized(self: Self) -> Self {
-        self * (1.0 / self.norm())
-    }
-}
-
-fn main() {
-    println!("e1*e1         : {}", e1 * e1);
-    println!("pss           : {}", e123);
-    println!("pss*pss       : {}", e123 * e123);
 }

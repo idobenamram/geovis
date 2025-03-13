@@ -43,3 +43,9 @@ local/
 # System Files
 .DS_Store
 Thumbs.db 
+
+# Cargo
+src/geo-calc/target/
+src/geo-calc/Cargo.lock
+src/geo-calc/target/
+**/*.rs.bk
