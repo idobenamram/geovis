@@ -4,7 +4,8 @@
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     height: 100%;
     overflow: hidden;
 }
@@ -52,14 +53,16 @@ body {
 
 .main-container {
     flex: 1;
-    min-height: 0; /* Important for nested flex containers */
+    min-height: 0;
+    /* Important for nested flex containers */
     display: flex;
     flex-direction: column;
 }
 
 .content-wrapper {
     flex: 1;
-    min-height: 0; /* Important for nested flex containers */
+    min-height: 0;
+    /* Important for nested flex containers */
     display: flex;
 }
 
@@ -301,14 +304,20 @@ body {
     gap: 2rem;
 }
 
-.latex-input, .ast-section, .preview-box, .visualization-section {
+.latex-input,
+.ast-section,
+.preview-box,
+.visualization-section {
     background-color: #fff;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1.5rem;
 }
 
-.latex-input h2, .ast-section h2, .preview-box h2, .visualization-section h2 {
+.latex-input h2,
+.ast-section h2,
+.preview-box h2,
+.visualization-section h2 {
     margin: 0 0 1rem;
     font-size: 1.2rem;
     color: var(--text-color);
@@ -451,13 +460,108 @@ body {
     .latex-content {
         grid-template-columns: 1fr;
     }
-    
+
     .step-item {
         padding: 0.75rem;
     }
-    
+
     .step-preview,
     .ganja-preview {
         padding: 0.75rem;
     }
-} 
+}
+
+/* LatexVisualizer Component Styles */
+.latex-visualizer {
+    margin: 2rem 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+.latex-visualizer .latex-header-container {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.latex-visualizer .latex-display {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.latex-visualizer .latex-content {
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.latex-visualizer .visualization-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-left: 1.5rem;
+}
+
+.latex-visualizer .viz-button {
+    padding: 0.5rem 1rem;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.latex-visualizer .viz-button:hover {
+    background-color: #e0e0e0;
+}
+
+.latex-visualizer .viz-button.active {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+
+.latex-visualizer .visualization-container {
+    height: 400px;
+    border-top: 1px solid #e0e0e0;
+    background-color: #f9f9f9;
+}
+
+.latex-visualizer .threejs-container,
+.latex-visualizer .ast-container {
+    height: 100%;
+    width: 100%;
+}
+
+/* Make sure the ThreeJs canvas fits properly */
+.latex-visualizer .threejs-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .latex-visualizer .latex-header-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .latex-visualizer .visualization-controls {
+        flex-direction: row;
+        margin-left: 0;
+        margin-top: 1rem;
+    }
+}
+
+/* Full-width documentation content */
+.docs-content.full-width {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+}
