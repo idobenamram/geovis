@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Documentation from './components/Documentation';
 import CodeEditor from './components/CodeEditor';
 import LatexEditor from './components/LatexEditor';
@@ -9,7 +9,6 @@ const App: React.FC = () => {
   const [currentCode, setCurrentCode] = useState('');
   const [markdownContent, setMarkdownContent] = useState('');
   const [latexContent, setLatexContent] = useState('');
-  const [latexDocsContent, setLatexDocsContent] = useState('');
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
@@ -22,10 +21,7 @@ const App: React.FC = () => {
   useEffect(() => {
     fetch('/content/ga_transformations.md')
       .then(response => response.text())
-      .then(content => {
-        setLatexContent(content);
-        setLatexDocsContent(content);
-      })
+      .then(content => setLatexContent(content))
       .catch(error => console.error('Error loading markdown:', error));
   }, []);
 
@@ -81,11 +77,11 @@ const App: React.FC = () => {
         <nav className="top-nav">
           <div className="nav-content">
             <div className="nav-left">
-              <Link to="/latex-docs" className="logo">Geometric Algebra Interactive Docs</Link>
+              <Link to="/" className="logo">Three.js Interactive Docs</Link>
             </div>
             <div className="nav-right">
+              <Link to="/" className="nav-link">Three.js Examples</Link>
               <Link to="/latex-docs" className="nav-link">LaTeX Content</Link>
-              <Link to="/threejs" className="nav-link">Three.js Examples</Link>
               <Link to="/latex" className="nav-link">LaTeX Editor</Link>
             </div>
           </div>
@@ -94,20 +90,8 @@ const App: React.FC = () => {
         <div className="main-container">
           <div className="content-wrapper">
             <Routes>
-              <Route path="/" element={<Navigate to="/latex-docs" replace />} />
               <Route
-                path="/latex-docs"
-                element={
-                  <div className="docs-content full-width">
-                    <Documentation
-                      markdownContent={latexDocsContent}
-                      onCodeClick={handleCodeClick}
-                    />
-                  </div>
-                }
-              />
-              <Route
-                path="/threejs"
+                path="/"
                 element={
                   <>
                     <div className="docs-content">
@@ -127,6 +111,17 @@ const App: React.FC = () => {
                       />
                     </div>
                   </>
+                }
+              />
+              <Route
+                path="/latex-docs"
+                element={
+                  <div className="docs-content full-width">
+                    <Documentation
+                      markdownContent={latexContent}
+                      onCodeClick={handleCodeClick}
+                    />
+                  </div>
                 }
               />
               <Route

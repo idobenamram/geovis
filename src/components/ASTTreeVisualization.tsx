@@ -41,7 +41,6 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
 
     if ('BinaryOpNode' in node) {
       const binOp = node.BinaryOpNode;
-      console.log(binOp.value);
       const value = R300.fromJson(binOp.value);
       const treeNode: TreeNode = {
         name: `${binOp.op}`,

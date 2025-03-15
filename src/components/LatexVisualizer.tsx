@@ -19,7 +19,6 @@ enum VisualizationMode {
 
 const LatexVisualizer: React.FC<LatexVisualizerProps> = ({ latex, className }) => {
     const [ast, setAst] = useState<any>(null);
-    const [identifiers, setIdentifiers] = useState<[string, R300][]>([]);
     const [visualizationMode, setVisualizationMode] = useState<VisualizationMode>(VisualizationMode.NONE);
     const threejsRef = useRef<ThreeJs3DSpaceRef>(null);
 
@@ -39,8 +38,6 @@ const LatexVisualizer: React.FC<LatexVisualizerProps> = ({ latex, className }) =
                 const vector = R300.vector(x, y, z);
                 newIdentifiers.push([id, vector]);
             });
-
-            setIdentifiers(newIdentifiers);
 
             // Calculate the expression with the random vectors
             const vars = Object.fromEntries(newIdentifiers.map(([key, value]) => [key, value.toJson()]));
@@ -112,11 +109,12 @@ const LatexVisualizer: React.FC<LatexVisualizerProps> = ({ latex, className }) =
 
             {visualizationMode !== VisualizationMode.NONE && (
                 <div className="visualization-container">
-                    {visualizationMode === VisualizationMode.THREEJS && (
-                        <div className="threejs-container">
-                            <ThreeJs3DSpace ref={threejsRef} />
-                        </div>
-                    )}
+                    {/* ThreeJs3DSpace is always rendered but visibility is toggled */}
+                    <div
+                        className={`threejs-container ${visualizationMode === VisualizationMode.THREEJS ? 'visible' : 'hidden'}`}
+                    >
+                        <ThreeJs3DSpace ref={threejsRef} />
+                    </div>
 
                     {visualizationMode === VisualizationMode.AST && (
                         <div className="ast-container">
