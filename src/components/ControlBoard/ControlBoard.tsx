@@ -19,8 +19,8 @@ export type SelectedVector = {
 
 const ControlBoard = ({ vectors, onSave, onDelete }: Props) => {
   const [selectedVector, setSelectedVector] = useState<SelectedVector | null>(null);
-  const [isVectorListOpen, setIsVectorListOpen] = useState(true);
-  const [isVectorFormOpen, setIsVectorFormOpen] = useState(true);
+  const [isVectorListOpen, setIsVectorListOpen] = useState(false);
+  const [isVectorFormOpen, setIsVectorFormOpen] = useState(false);
 
   const handleSelectVector = (idx: number) => {
     if (selectedVector && selectedVector.idx === idx) {

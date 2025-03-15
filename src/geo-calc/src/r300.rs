@@ -52,7 +52,9 @@ impl R300 {
         let mut parts = Vec::new();
 
         for (i, prefix) in basis.iter().enumerate() {
-            parts.push(format!("{}: {}", prefix, self.mvec[i]));
+            if self.mvec[i] != 0.0 {
+                parts.push(format!("{}: {:.3}", prefix, self.mvec[i]));
+            }
         }
         format!("R300({})", parts.join(", "))
     }

@@ -63,7 +63,7 @@ export const StyledApp = styled.div`
 `;
 
 // Function to generate a random vector
-export const r300_to_threejs_object = (r300: R300) => {
+const r300_to_threejs_object = (r300: R300) => {
   if (r300.isVector()) {
     return new THREE.Vector3(r300.get(1), r300.get(2), r300.get(3));
   }
@@ -257,9 +257,10 @@ const ThreeJs3DSpace = forwardRef<ThreeJs3DSpaceRef, ThreeJs3DSpaceProps>(({ cla
         height / 2,
         -height / 2
       );
-      camera.position.x = 5;
+      camera.position.x = 15;
       camera.position.y = -20;
-      camera.position.z = 15;
+      camera.position.z = 8;
+      camera.zoom = 25;
       camera.up = new THREE.Vector3(0, 0, 1);
       camera.updateProjectionMatrix();
 
@@ -276,6 +277,16 @@ const ThreeJs3DSpace = forwardRef<ThreeJs3DSpaceRef, ThreeJs3DSpaceProps>(({ cla
         UP: 'KeyW',    // W
         BOTTOM: 'KeyS'   // S
       };
+
+      // Add event listener to log camera position when controls change
+      controls.addEventListener('change', () => {
+        console.log('Camera position:', {
+          x: camera.position.x.toFixed(2),
+          y: camera.position.y.toFixed(2),
+          z: camera.position.z.toFixed(2),
+          zoom: camera.zoom.toFixed(2)
+        });
+      });
 
       // setup render loop
       function animate(): void {
@@ -363,38 +374,37 @@ const ThreeJs3DSpace = forwardRef<ThreeJs3DSpaceRef, ThreeJs3DSpaceProps>(({ cla
   }, [gridSize]);
 
   // zoom to fit
-  //   useEffect(() => {
-  //     if (cameraRef.current) {
-  //       const combinedBox = new THREE.Box3();
+  // useEffect(() => {
+  //   if (cameraRef.current) {
+  //     const combinedBox = new THREE.Box3();
 
-  //       // find maximum absolute scalar value of all vectors
-  //       let maxScalar = 0;
-  //       console.log('vectors', vectors);
-  //       vectors.forEach((vectorObj: ThreeJSMultiVector) => {
-  //         combinedBox.union(new THREE.Box3().expandByObject(vectorObj.vector));
-  //         maxScalar = Math.max(
-  //           maxScalar,
-  //           Math.abs(vectorObj.vector.userData.target.x),
-  //           Math.abs(vectorObj.vector.userData.target.y),
-  //           Math.abs(vectorObj.vector.userData.target.z)
-  //         );
-  //       });
+  //     // find maximum absolute scalar value of all vectors
+  //     let maxScalar = 0;
+  //     vectors.forEach((vectorObj: ThreeJSMultiVector) => {
+  //       combinedBox.union(new THREE.Box3().expandByObject(vectorObj.vector));
+  //       maxScalar = Math.max(
+  //         maxScalar,
+  //         Math.abs(vectorObj.vector.userData.target.x),
+  //         Math.abs(vectorObj.vector.userData.target.y),
+  //         Math.abs(vectorObj.vector.userData.target.z)
+  //       );
+  //     });
 
-  //       // adjust camera zoom
-  //       cameraRef.current.zoom =
-  //         Math.min(
-  //           window.innerWidth / (combinedBox.max.x - combinedBox.min.x),
-  //           window.innerHeight / (combinedBox.max.y - combinedBox.min.y)
-  //         ) * 0.3;
-  //       cameraRef.current.updateProjectionMatrix();
+  //     // adjust camera zoom
+  //     cameraRef.current.zoom =
+  //       Math.min(
+  //         window.innerWidth / (combinedBox.max.x - combinedBox.min.x),
+  //         window.innerHeight / (combinedBox.max.y - combinedBox.min.y)
+  //       ) * 0.3;
+  //     cameraRef.current.updateProjectionMatrix();
 
-  //       // adjust grid size if needed (round up to nearest multiple of 4)
-  //       let targetGridSize = Math.ceil((maxScalar * 2) / 4.0) * 4.0;
-  //       // make sure grid size is at least 12
-  //       if (targetGridSize < 12) targetGridSize = 12;
-  //       if (isFinite(targetGridSize)) setGridSize(targetGridSize);
-  //     }
-  //   }, [vectors]);
+  //     // adjust grid size if needed (round up to nearest multiple of 4)
+  //     let targetGridSize = Math.ceil((maxScalar * 2) / 4.0) * 4.0;
+  //     // make sure grid size is at least 12
+  //     if (targetGridSize < 12) targetGridSize = 12;
+  //     if (isFinite(targetGridSize)) setGridSize(targetGridSize);
+  //   }
+  // }, [vectors]);
 
   const onSave = (idx: number | null, coords: SelectedVector['coords']) => {
     drawVector(new THREE.Vector3(coords.x, coords.y, coords.z), "", idx);
