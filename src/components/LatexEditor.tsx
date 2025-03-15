@@ -48,34 +48,9 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
         try {
             const ast = parse_latex(input);
             createIdentifiers(ast);
-            console.log(ast, identifiers);
-
-            try {
-                const vars = Object.fromEntries(identifiers.map(([key, value]) => {
-                    console.log("key", key, "value", value);
-                    console.log("Prototype of r300:", Object.getPrototypeOf(value));
-                    console.log("Methods:", Object.keys(Object.getPrototypeOf(value)));
-
-                    // console.log("value.display()", value.display());
-                    // Parse the JSON string returned by to_json() into an object
-                    return [key, JSON.parse(value.toJson())]
-                }));
-
-                // Use the vars object
-                console.log("vars", vars);
-                // const calculated = calculate_expression(ast, vars);
-                // console.log("calculated result:", calculated);
-            }
-            catch (error: any) {
-                console.log("error", error);
-                const vars = {};
-            }
-
-            // console.log("vars", vars);
-            // const calculated = calculate_expression(ast, vars);
-            console.log("after calculation");
-            setAst(null);
-            console.log(ast);
+            const vars = Object.fromEntries(identifiers.map(([key, value]) => [key, value.toJson()]));
+            const calculated = JSON.parse(calculate_expression(ast, vars));
+            setAst(calculated);
         } catch (error: any) {
             setAst({ error: error.message });
         }
@@ -92,8 +67,8 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
         renderedHTML = `<span style="color:red;">Error rendering LaTeX</span>`;
     }
 
-    const handleVectorAdd = (name: string) => {
-        threejsRef.current?.addVector(name);
+    const handleVectorAdd = (name: string, value: R300) => {
+        threejsRef.current?.addVector(name, value);
     };
 
     const handleVectorRemove = (name: string) => {

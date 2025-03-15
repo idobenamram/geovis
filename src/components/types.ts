@@ -1,11 +1,13 @@
-import { R300 } from "geo-calc";
+export interface SerializedR300 {
+    mvec: number[];
+}
 
 export interface BinaryOperator {
     BinaryOpNode: {
         op: string;
         left: ASTNode;
         right: ASTNode;
-        value: R300,
+        value: SerializedR300,
     }
 }
 
@@ -13,17 +15,21 @@ export interface UnaryOperator {
     UnaryOpNode: {
         op: string;
         operand: ASTNode;
-        value: R300,
+        value: SerializedR300,
     }
 }
 
 export interface Identifier {
-    Identifier: string;
-    value: R300
+    Identifier: {
+        name: string;
+        value: SerializedR300;
+    }
 }
 
 export interface Int {
-    value: R300
+    Int: {
+        value: SerializedR300;
+    }
 }
 
 export type ASTNode = BinaryOperator | UnaryOperator | Identifier | Int;

@@ -10,13 +10,14 @@ import {
 
 import ControlBoard, { SelectedVector } from './ControlBoard/ControlBoard';
 import { ThreeJSMultiVector } from './types';
+import { R300 } from 'geo-calc';
 
 interface ThreeJs3DSpaceProps {
   className?: string;
 }
 
 export interface ThreeJs3DSpaceRef {
-  addVector: (name: string) => void;
+  addVector: (name: string, value: R300) => void;
   addVectorWithPosition: (name: string, position: { x: number, y: number, z: number }) => void;
   removeVector: (name: string) => void;
   hasVector: (name: string) => boolean;
@@ -62,9 +63,14 @@ export const StyledApp = styled.div`
 `;
 
 // Function to generate a random vector
-export const generateRandomVector = () => {
-  const randomComponent = () => (Math.random() - 0.5) * 6; // Random value between -3 and 3
-  return new THREE.Vector3(randomComponent(), randomComponent(), randomComponent());
+export const r300_to_threejs_object = (r300: R300) => {
+  if (r300.isVector()) {
+    return new THREE.Vector3(r300.get(1), r300.get(2), r300.get(3));
+  }
+  // if (r300.is_bivector()) {
+  //   return new THREE.Vector3(r300[4], r300[5], r300[6]);
+  // }
+  return new THREE.Vector3(0, 0, 0);
 };
 
 const ThreeJs3DSpace = forwardRef<ThreeJs3DSpaceRef, ThreeJs3DSpaceProps>(({ className }, ref) => {
@@ -182,8 +188,8 @@ const ThreeJs3DSpace = forwardRef<ThreeJs3DSpaceRef, ThreeJs3DSpaceProps>(({ cla
   );
 
   // Add methods to add/remove vectors by name
-  const addVector = useCallback((name: string) => {
-    const vector = generateRandomVector();
+  const addVector = useCallback((name: string, value: R300) => {
+    const vector = r300_to_threejs_object(value);
     drawVector(vector, name, null);
   }, [drawVector]);
 

@@ -11,7 +11,7 @@ interface TreeNode extends RawNodeDatum {
 
 interface ASTTreeVisualizationProps {
   ast: ASTNode | null;
-  onVectorAdd?: (name: string) => void;
+  onVectorAdd?: (name: string, value: R300) => void;
   onVectorRemove?: (name: string) => void;
 }
 
@@ -41,12 +41,14 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
 
     if ('BinaryOpNode' in node) {
       const binOp = node.BinaryOpNode;
+      console.log(binOp.value);
+      const value = R300.fromJson(binOp.value);
       const treeNode: TreeNode = {
         name: `${binOp.op}`,
         nodeId: `binary-${binOp.op}-${binOp.left}-${binOp.right}`,
-        value: binOp.value,
+        value: value,
         attributes: {
-          value: binOp.value.display()
+          value: value.display()
         }
       };
 
@@ -65,12 +67,13 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
 
     if ('UnaryOpNode' in node) {
       const unaryOp = node.UnaryOpNode;
+      const value = R300.fromJson(unaryOp.value);
       const treeNode: TreeNode = {
         name: `${unaryOp.op}`,
         nodeId: `unary-${unaryOp.op}-${unaryOp.operand}`,
-        value: unaryOp.value,
+        value: value,
         attributes: {
-          value: unaryOp.value.display()
+          value: value.display()
         }
       };
 
@@ -84,22 +87,26 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
     }
 
     if ('Int' in node) {
+      const int = node.Int;
+      const value = R300.fromJson(int.value);
       return {
-        name: `${node.Int}`,
-        nodeId: `int-${node.Int}`,
-        value: node.value,
+        name: `${int.value}`,
+        nodeId: `int-${int.value}`,
+        value: value,
         attributes: {
-          value: node.value.display()
+          value: value.display()
         }
       };
     }
     if ('Identifier' in node) {
+      const identifier = node.Identifier;
+      const value = R300.fromJson(identifier.value);
       return {
-        name: node.Identifier,
-        nodeId: `id-${node.Identifier}`,
-        value: node.value,
+        name: identifier.name,
+        nodeId: `id-${identifier.name}`,
+        value: value,
         attributes: {
-          value: node.value.display()
+          value: value.display()
         }
       };
     }
@@ -109,13 +116,13 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
   };
 
   const handleNodeClick = useCallback((nodeDatum: TreeNode) => {
-    // Only handle clicks for single-letter identifiers
-    const name = nodeDatum.attributes?.name;
-    if (nodeDatum.name !== 'Identifier' || !name || typeof name !== 'string' || name.length !== 1) {
+    if (!nodeDatum.value.isScalar() && !nodeDatum.value.isVector() && !nodeDatum.value.isBivector()) {
       return;
     }
 
+    const name = nodeDatum.name;
     const nodeId = nodeDatum.nodeId;
+    const value = nodeDatum.value;
 
     setActiveNodes(prev => {
       const newActiveNodes = new Set(prev);
@@ -124,7 +131,7 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
         onVectorRemove?.(name);
       } else {
         newActiveNodes.add(nodeId as string);
-        onVectorAdd?.(name);
+        onVectorAdd?.(name, value);
       }
       return newActiveNodes;
     });

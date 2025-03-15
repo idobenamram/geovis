@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_wasm_bindgen::{from_value, to_value};
 use std::f64::consts::PI;
 /// taken from https://bivector.net/tools.html?p=3&q=0&r=0
 // Written by a generator written by enki.
@@ -31,7 +32,6 @@ impl R300 {
 
 #[wasm_bindgen]
 impl R300 {
-
     pub fn vector(e1_val: f64, e2_val: f64, e3_val: f64) -> Self {
         let mut ret = Self::zero();
         ret.mvec[1] = e1_val;
@@ -50,17 +50,54 @@ impl R300 {
 
     pub fn display(&self) -> String {
         let mut parts = Vec::new();
-        
+
         for (i, prefix) in basis.iter().enumerate() {
             parts.push(format!("{}: {}", prefix, self.mvec[i]));
         }
         format!("R300({})", parts.join(", "))
+    }
 
+    pub fn get(&self, idx: usize) -> f64 {
+        self.mvec[idx]
     }
 
     #[wasm_bindgen(js_name = toJson)]
-    pub fn to_json(&self) -> String {
-        serde_json::to_string(self).unwrap()
+    pub fn to_json(&self) -> JsValue {
+        to_value(self).unwrap()
+    }
+
+    #[wasm_bindgen(js_name = fromJson)]
+    pub fn from_json(json: JsValue) -> Result<Self, JsValue> {
+        from_value(json).map_err(|e| JsValue::from_str(&format!("Failed to parse JSON: {}", e)))
+    }
+
+    #[wasm_bindgen(js_name = isScalar)]
+    pub fn is_scalar(&self) -> bool {
+        self.mvec[1] == 0.0
+            && self.mvec[2] == 0.0
+            && self.mvec[3] == 0.0
+            && self.mvec[4] == 0.0
+            && self.mvec[5] == 0.0
+            && self.mvec[6] == 0.0
+            && self.mvec[7] == 0.0
+    }
+
+    #[wasm_bindgen(js_name = isVector)]
+    pub fn is_vector(&self) -> bool {
+        self.mvec[0] == 0.0
+            && self.mvec[4] == 0.0
+            && self.mvec[5] == 0.0
+            && self.mvec[6] == 0.0
+            && self.mvec[7] == 0.0
+    }
+
+    #[wasm_bindgen(js_name = isBivector)]
+    pub fn is_bivector(&self) -> bool {
+        self.mvec[0] == 0.0
+            && self.mvec[1] == 0.0
+            && self.mvec[2] == 0.0
+            && self.mvec[3] == 0.0
+            && self.mvec[7] == 0.0
     }
 }
 
