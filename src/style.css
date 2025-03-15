@@ -557,10 +557,19 @@ body {
     pointer-events: auto;
 }
 
-.latex-visualizer .ast-container {
-    z-index: 2;
+.latex-visualizer .ast-container.hidden {
+    z-index: -1;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
 }
 
+.latex-visualizer .ast-container.visible {
+    z-index: 2;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
 /* Make sure the ThreeJs canvas fits properly */
 .latex-visualizer .threejs-container canvas {
     width: 100% !important;

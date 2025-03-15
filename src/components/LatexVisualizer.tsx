@@ -116,15 +116,13 @@ const LatexVisualizer: React.FC<LatexVisualizerProps> = ({ latex, className }) =
                         <ThreeJs3DSpace ref={threejsRef} />
                     </div>
 
-                    {visualizationMode === VisualizationMode.AST && (
-                        <div className="ast-container">
+                        <div className={`ast-container ${visualizationMode === VisualizationMode.AST ? 'visible' : 'hidden'}`}>
                             <ASTTreeVisualization
                                 ast={ast}
                                 onVectorAdd={handleVectorAdd}
                                 onVectorRemove={handleVectorRemove}
                             />
                         </div>
-                    )}
                 </div>
             )}
         </div>
