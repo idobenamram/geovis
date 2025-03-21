@@ -42,6 +42,7 @@ const LatexVisualizer: React.FC<LatexVisualizerProps> = ({ latex, className }) =
             // Calculate the expression with the random vectors
             const vars = Object.fromEntries(newIdentifiers.map(([key, value]) => [key, value.toJson()]));
             const calculated = JSON.parse(calculate_expression(parsedAst, vars));
+            console.log(calculated);
             setAst(calculated);
         } catch (error: any) {
             setAst({ error: error.message });
@@ -119,6 +120,7 @@ const LatexVisualizer: React.FC<LatexVisualizerProps> = ({ latex, className }) =
                         <div className={`ast-container ${visualizationMode === VisualizationMode.AST ? 'visible' : 'hidden'}`}>
                             <ASTTreeVisualization
                                 ast={ast}
+                                input={latex}
                                 onVectorAdd={handleVectorAdd}
                                 onVectorRemove={handleVectorRemove}
                             />

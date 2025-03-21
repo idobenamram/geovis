@@ -43,9 +43,9 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
 
     if ('BinaryOpNode' in node.type) {
       const binOp = node.type.BinaryOpNode;
-      const value = R300.fromJson(binOp.value);
+      const value = R300.fromJson(node.value);
       const treeNode: TreeNode = {
-        name: `${input.slice(node.start, node.end)}`,
+        name: `${input.slice(node.start, node.end+1)}`,
         nodeId: `binary-${binOp.op}-${binOp.left}-${binOp.right}`,
         value: value,
         attributes: {
@@ -68,9 +68,9 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
 
     if ('UnaryOpNode' in node.type) {
       const unaryOp = node.type.UnaryOpNode;
-      const value = R300.fromJson(unaryOp.value);
+      const value = R300.fromJson(node.value);
       const treeNode: TreeNode = {
-        name: `${input.slice(node.start, node.end)}`,
+        name: `${input.slice(node.start, node.end+1)}`,
         nodeId: `unary-${unaryOp.op}-${unaryOp.operand}`,
         value: value,
         attributes: {
@@ -88,11 +88,10 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
     }
 
     if ('Int' in node.type) {
-      const int = node.type.Int;
-      const value = R300.fromJson(int.value);
+      const value = R300.fromJson(node.value);
       return {
-        name: `${int.value}`,
-        nodeId: `int-${int.value}`,
+        name: `${input.slice(node.start, node.end+1)}`,
+        nodeId: `int-${node.value}`,
         value: value,
         attributes: {
           value: value.display()
@@ -101,7 +100,7 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
     }
     if ('Identifier' in node.type) {
       const identifier = node.type.Identifier;
-      const value = R300.fromJson(identifier.value);
+      const value = R300.fromJson(node.value);
       return {
         name: identifier.name,
         nodeId: `id-${identifier.name}`,

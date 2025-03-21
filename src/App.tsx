@@ -128,7 +128,7 @@ const App: React.FC = () => {
                 path="/latex"
                 element={
                   <LatexEditor
-                    value={latexContent}
+                    value={"a \\wedge b"}
                     onChange={setLatexContent}
                   />
                 }

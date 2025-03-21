@@ -7,7 +7,6 @@ export interface BinaryOperator {
         op: string;
         left: ASTNode;
         right: ASTNode;
-        value: SerializedR300,
     }
 }
 
@@ -15,26 +14,23 @@ export interface UnaryOperator {
     UnaryOpNode: {
         op: string;
         operand: ASTNode;
-        value: SerializedR300,
     }
 }
 
 export interface Identifier {
     Identifier: {
         name: string;
-        value: SerializedR300;
     }
 }
 
 export interface Int {
-    Int: {
-        value: SerializedR300;
-    }
+    Int: {}
 }
 
 export type ASTNode = {
     start: number;
     end: number;
+    value: SerializedR300,
     type: BinaryOperator | UnaryOperator | Identifier | Int;
 }
 

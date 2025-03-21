@@ -51,7 +51,9 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
             const ast = parse_latex(input);
             createIdentifiers(ast);
             const vars = Object.fromEntries(identifiers.map(([key, value]) => [key, value.toJson()]));
+            console.log(ast);
             const calculated = JSON.parse(calculate_expression(ast, vars));
+            console.log("calculated", calculated);
             setAst(calculated);
         } catch (error: any) {
             setAst({ error: error.message });
