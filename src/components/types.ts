@@ -32,7 +32,11 @@ export interface Int {
     }
 }
 
-export type ASTNode = BinaryOperator | UnaryOperator | Identifier | Int;
+export type ASTNode = {
+    start: number;
+    end: number;
+    type: BinaryOperator | UnaryOperator | Identifier | Int;
+}
 
 export interface ThreeJSMultiVector {
     vector: THREE.Object3D;

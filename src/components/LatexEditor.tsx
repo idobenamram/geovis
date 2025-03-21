@@ -12,6 +12,7 @@ interface LatexEditorProps {
 }
 
 const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
+    const [input, setInput] = useState<string>(value);
     const [ast, setAst] = useState<any>(null);
     const threejsRef = useRef<any>(null);
     const [identifiers, setIdentifiers] = useState<[string, R300][]>([]);
@@ -44,6 +45,7 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
     // Called when the user types in the textarea
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const input = e.target.value;
+        setInput(input);
         onChange(input);
         try {
             const ast = parse_latex(input);
@@ -119,6 +121,7 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
                         <h2>AST Visualization</h2>
                         <ASTTreeVisualization
                             ast={ast}
+                            input={input}
                             onVectorAdd={handleVectorAdd}
                             onVectorRemove={handleVectorRemove}
                         />

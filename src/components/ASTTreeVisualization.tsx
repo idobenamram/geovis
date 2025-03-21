@@ -11,12 +11,14 @@ interface TreeNode extends RawNodeDatum {
 
 interface ASTTreeVisualizationProps {
   ast: ASTNode | null;
+  input: string | null;
   onVectorAdd?: (name: string, value: R300) => void;
   onVectorRemove?: (name: string) => void;
 }
 
 const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
   ast,
+  input,
   onVectorAdd,
   onVectorRemove
 }) => {
@@ -24,7 +26,7 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
   const [activeNodes, setActiveNodes] = useState<Set<string>>(new Set());
 
   // Convert AST to the format expected by react-d3-tree
-  const convertASTToTreeData = (node: ASTNode): TreeNode | null => {
+  const convertASTToTreeData = (node: ASTNode, input: string): TreeNode | null => {
     if (!node || typeof node !== 'object') return null;
 
     // Handle error case
@@ -39,11 +41,11 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
       };
     }
 
-    if ('BinaryOpNode' in node) {
-      const binOp = node.BinaryOpNode;
+    if ('BinaryOpNode' in node.type) {
+      const binOp = node.type.BinaryOpNode;
       const value = R300.fromJson(binOp.value);
       const treeNode: TreeNode = {
-        name: `${binOp.op}`,
+        name: `${input.slice(node.start, node.end)}`,
         nodeId: `binary-${binOp.op}-${binOp.left}-${binOp.right}`,
         value: value,
         attributes: {
@@ -53,9 +55,9 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
 
       // Add children
       const children: TreeNode[] = [];
-      const leftNode = convertASTToTreeData(binOp.left);
+      const leftNode = convertASTToTreeData(binOp.left, input);
       if (leftNode) children.push(leftNode);
-      const rightNode = convertASTToTreeData(binOp.right);
+      const rightNode = convertASTToTreeData(binOp.right, input);
       if (rightNode) children.push(rightNode);
       if (children.length > 0) {
         treeNode.children = children;
@@ -64,11 +66,11 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
       return treeNode;
     }
 
-    if ('UnaryOpNode' in node) {
-      const unaryOp = node.UnaryOpNode;
+    if ('UnaryOpNode' in node.type) {
+      const unaryOp = node.type.UnaryOpNode;
       const value = R300.fromJson(unaryOp.value);
       const treeNode: TreeNode = {
-        name: `${unaryOp.op}`,
+        name: `${input.slice(node.start, node.end)}`,
         nodeId: `unary-${unaryOp.op}-${unaryOp.operand}`,
         value: value,
         attributes: {
@@ -77,7 +79,7 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
       };
 
       // Add child
-      const operandNode = convertASTToTreeData(unaryOp.operand);
+      const operandNode = convertASTToTreeData(unaryOp.operand, input);
       if (operandNode) {
         treeNode.children = [operandNode];
       }
@@ -85,8 +87,8 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
       return treeNode;
     }
 
-    if ('Int' in node) {
-      const int = node.Int;
+    if ('Int' in node.type) {
+      const int = node.type.Int;
       const value = R300.fromJson(int.value);
       return {
         name: `${int.value}`,
@@ -97,8 +99,8 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
         }
       };
     }
-    if ('Identifier' in node) {
-      const identifier = node.Identifier;
+    if ('Identifier' in node.type) {
+      const identifier = node.type.Identifier;
       const value = R300.fromJson(identifier.value);
       return {
         name: identifier.name,
@@ -140,7 +142,7 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
     return <div>No AST data available</div>;
   }
 
-  const treeData = convertASTToTreeData(ast);
+  const treeData = convertASTToTreeData(ast, input ?? '');
 
   if (!treeData) {
     return <div>No AST data available</div>;
