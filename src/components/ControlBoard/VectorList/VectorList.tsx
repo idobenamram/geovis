@@ -1,6 +1,8 @@
 import { StyledVectorList, ListItem } from './VectorList.styles';
 import { SelectedVector } from '../ControlBoard';
 import { ThreeJSMultiVector } from '../../types';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 
 type Props = {
   vectors: ThreeJSMultiVector[];
@@ -15,6 +17,18 @@ const VectorList = ({
   onSelectVector,
   onDeleteVector,
 }: Props) => {
+  const renderLatex = (latex: string) => {
+    try {
+      return katex.renderToString(latex, {
+        throwOnError: false,
+        displayMode: false,
+      });
+    } catch (error) {
+      console.error('LaTeX rendering error:', error);
+      return `<span style="color:red;">Error rendering LaTeX</span>`;
+    }
+  };
+
   return (
     <StyledVectorList>
       {vectors.map((vector, id) => (
@@ -23,7 +37,7 @@ const VectorList = ({
           isCurrent={selectedVector ? selectedVector.idx === id : false}
           onClick={() => onSelectVector(id)}
         >
-          {vector.name}
+          <span dangerouslySetInnerHTML={{ __html: renderLatex(vector.name) }} />
           <button
             className="ml-auto p-1 rounded-full hover:bg-gray-700 transition-colors"
             onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
