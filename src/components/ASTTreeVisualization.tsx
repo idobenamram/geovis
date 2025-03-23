@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Tree, { RawNodeDatum, } from 'react-d3-tree';
+import katex from "katex";
 
 import { ASTNode } from './types';
 import { R300 } from 'geo-calc';
@@ -15,6 +16,71 @@ interface ASTTreeVisualizationProps {
   onVectorAdd?: (name: string, value: R300) => void;
   onVectorRemove?: (name: string) => void;
 }
+
+interface TreeNodeElementProps {
+  nodeDatum: RawNodeDatum;
+  toggleNode: () => void;
+  activeNodes: Set<string>;
+  onNodeClick: (node: TreeNode) => void;
+}
+
+const TreeNodeElement: React.FC<TreeNodeElementProps> = ({ nodeDatum, toggleNode, activeNodes, onNodeClick }) => {
+  const node = nodeDatum as RawNodeDatum as TreeNode;
+  const name = node.attributes?.name;
+  const isIdentifier = node.name === 'Identifier' && name && typeof name === 'string' && name.length === 1;
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Use KaTeX to convert the LaTeX input to HTML
+  let renderedHTML = "";
+  try {
+    renderedHTML = katex.renderToString(node.name, {
+      throwOnError: false,
+      displayMode: false,
+    });
+  } catch (error) {
+    console.error('LaTeX rendering error:', error);
+    renderedHTML = `<span style="color:red;">Error rendering LaTeX</span>`;
+  }
+
+  return (
+    <g>
+      <circle
+        r="20"
+        fill={activeNodes.has(node.nodeId) ? '#4CAF50' : '#88c999'}
+        onClick={(e) => {
+          e.stopPropagation();
+          onNodeClick(node);
+        }}
+        style={{ cursor: isIdentifier ? 'pointer' : 'default' }}
+      />
+      <foreignObject x="15" y="-15" width={contentRef.current?.offsetWidth ?? 100} height="30">
+        <div
+          ref={contentRef}
+          dangerouslySetInnerHTML={{ __html: renderedHTML }}
+          style={{
+            textAlign: 'center',
+            fontSize: '14px',
+            color: 'black',
+            whiteSpace: 'nowrap'
+          }}
+        />
+      </foreignObject>
+      {node.attributes && (
+        Object.entries(node.attributes).map(([key, value], i) => (
+          <text
+            key={key}
+            fill="#666"
+            x="25"
+            y={(i + 1) * 15 + 5}
+            style={{ fontSize: '0.7rem' }}
+          >
+            {`${key}: ${value}`}
+          </text>
+        ))
+      )}
+    </g>
+  );
+};
 
 const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
   ast,
@@ -45,7 +111,7 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
       const binOp = node.type.BinaryOpNode;
       const value = R300.fromJson(node.value);
       const treeNode: TreeNode = {
-        name: `${input.slice(node.start, node.end+1)}`,
+        name: `${input.slice(node.start, node.end + 1)}`,
         nodeId: `binary-${binOp.op}-${binOp.left}-${binOp.right}`,
         value: value,
         attributes: {
@@ -70,7 +136,7 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
       const unaryOp = node.type.UnaryOpNode;
       const value = R300.fromJson(node.value);
       const treeNode: TreeNode = {
-        name: `${input.slice(node.start, node.end+1)}`,
+        name: `${input.slice(node.start, node.end + 1)}`,
         nodeId: `unary-${unaryOp.op}-${unaryOp.operand}`,
         value: value,
         attributes: {
@@ -90,7 +156,7 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
     if ('Int' in node.type) {
       const value = R300.fromJson(node.value);
       return {
-        name: `${input.slice(node.start, node.end+1)}`,
+        name: `${input.slice(node.start, node.end + 1)}`,
         nodeId: `int-${node.value}`,
         value: value,
         attributes: {
@@ -156,47 +222,14 @@ const ASTTreeVisualization: React.FC<ASTTreeVisualizationProps> = ({
         translate={{ x: 200, y: 50 }}
         nodeSize={{ x: 150, y: 80 }}
         separation={{ siblings: 2, nonSiblings: 2.5 }}
-        renderCustomNodeElement={({ nodeDatum, toggleNode }) => {
-          const node = nodeDatum as RawNodeDatum as TreeNode;
-          const name = node.attributes?.name;
-          const isIdentifier = node.name === 'Identifier' && name && typeof name === 'string' && name.length === 1;
-
-          return (
-            <g>
-              <circle
-                r="20"
-                fill={activeNodes.has(node.nodeId) ? '#4CAF50' : '#88c999'}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleNodeClick(node);
-                }}
-                style={{ cursor: isIdentifier ? 'pointer' : 'default' }}
-              />
-              <text
-                fill="black"
-                strokeWidth="0.5"
-                x="25"
-                style={{ fontSize: '0.8rem' }}
-                onClick={toggleNode}
-              >
-                {node.name}
-              </text>
-              {node.attributes && (
-                Object.entries(node.attributes).map(([key, value], i) => (
-                  <text
-                    key={key}
-                    fill="#666"
-                    x="25"
-                    y={(i + 1) * 15 + 5}
-                    style={{ fontSize: '0.7rem' }}
-                  >
-                    {`${key}: ${value}`}
-                  </text>
-                ))
-              )}
-            </g>
-          );
-        }}
+        renderCustomNodeElement={({ nodeDatum, toggleNode }) => (
+          <TreeNodeElement
+            nodeDatum={nodeDatum}
+            toggleNode={toggleNode}
+            activeNodes={activeNodes}
+            onNodeClick={handleNodeClick}
+          />
+        )}
       />
     </div>
   );

@@ -63,7 +63,7 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
     // Use KaTeX to convert the LaTeX input to HTML
     let renderedHTML = "";
     try {
-        renderedHTML = katex.renderToString(value, {
+        renderedHTML = katex.renderToString(input, {
             throwOnError: false,
             displayMode: true,
         });
@@ -97,7 +97,7 @@ const LatexEditor: React.FC<LatexEditorProps> = ({ value, onChange }) => {
                     <div className="latex-input">
                         <h2>Editor</h2>
                         <textarea
-                            value={value}
+                            value={input}
                             onChange={handleInputChange}
                             placeholder="Enter LaTeX here..."
                             spellCheck="false"
