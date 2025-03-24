@@ -11,6 +11,8 @@ import {
 import ControlBoard, { SelectedVector } from './ControlBoard/ControlBoard';
 import { ThreeJSMultiVector } from './types';
 import { R300 } from 'geo-calc';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 
 interface ThreeJs3DSpaceProps {
   className?: string;
@@ -63,13 +65,30 @@ export const StyledApp = styled.div`
 `;
 
 // Function to generate a random vector
-const r300_to_threejs_object = (r300: R300) => {
+const r300_to_threejs_object = (r300: R300): THREE.Vector3 | [THREE.Vector3, THREE.Vector3] => {
   if (r300.isVector()) {
     return new THREE.Vector3(r300.get(1), r300.get(2), r300.get(3));
   }
-  // if (r300.is_bivector()) {
-  //   return new THREE.Vector3(r300[4], r300[5], r300[6]);
-  // }
+  if (r300.isBivector()) {
+    // For bivectors, we'll return an array of two vectors that span the plane
+    // The first vector is directly from the bivector components
+    const bivector = new THREE.Vector3(r300.get(4), r300.get(5), r300.get(6));
+    const b = new THREE.Vector3(bivector.z, -bivector.y, bivector.x);
+    const z = new THREE.Vector3(0,0,1);
+    // Get v1 by taking cross product of b with z if they're not parallel,
+    // otherwise use x axis
+    let v1;
+    if (Math.abs(b.dot(z)) < 0.99) {  // Check if b and z are not nearly parallel
+        v1 = z.clone().sub(b.clone().normalize().multiplyScalar(z.dot(b)));
+    } else {
+        v1 = new THREE.Vector3(1,0,0);
+    }
+    v1.multiplyScalar(b.length());  // Scale v1 to match bivector magnitude
+
+    // We can get v2 by taking the cross product of b with v1
+    const v2 = new THREE.Vector3().crossVectors(b, v1).normalize().multiplyScalar(v1.length());
+    return [v1, v2] as [THREE.Vector3, THREE.Vector3];
+  }
   return new THREE.Vector3(0, 0, 0);
 };
 
@@ -122,7 +141,21 @@ const ThreeJs3DSpace = forwardRef<ThreeJs3DSpaceRef, ThreeJs3DSpaceProps>(({ cla
     small: boolean = false
   ) => {
     const labelDiv = document.createElement('div');
-    labelDiv.textContent = label || `[${target.toArray()}]`;
+    
+    // Convert vector coordinates to LaTeX format if no label provided
+    // const latexContent = label || `\\begin{bmatrix}${target.toArray().map(n => n.toFixed(2)).join('\\\\')}\\end{bmatrix}`;
+    const latexContent = label || `[${target.toArray()}]`
+    
+    try {
+      labelDiv.innerHTML = katex.renderToString(latexContent, {
+        throwOnError: false,
+        displayMode: false
+      });
+    } catch (error) {
+      console.error('LaTeX rendering error:', error);
+      labelDiv.textContent = label || `[${target.toArray()}]`;
+    }
+
     labelDiv.style.marginTop = '-1em';
 
     if (small) {
@@ -187,11 +220,104 @@ const ThreeJs3DSpace = forwardRef<ThreeJs3DSpaceRef, ThreeJs3DSpaceProps>(({ cla
     []
   );
 
+  const drawBivector = useCallback(
+    (vectors: [THREE.Vector3, THREE.Vector3], name: string, idx: number | null) => {
+      // Create a container for the bivector visualization
+      const bivectorContainer = new THREE.Group();
+
+      // Draw the two spanning vectors
+      const [v1, v2] = vectors;
+      const hex = 0x00ffff;
+
+      // Draw first vector
+      const dir1 = v1.clone().normalize();
+      const vectorHelper1 = new THREE.ArrowHelper(
+        dir1,
+        new THREE.Vector3(0, 0, 0),
+        v1.length(),
+        hex,
+        0.2,
+        0.1
+      );
+
+      // Draw second vector
+      const dir2 = v2.clone().normalize();
+      const vectorHelper2 = new THREE.ArrowHelper(
+        dir2,
+        new THREE.Vector3(0, 0, 0),
+        v2.length(),
+        hex,
+        0.2,
+        0.1
+      );
+
+      // Create a parallelogram to represent the plane
+      const points: [THREE.Vector3, THREE.Vector3, THREE.Vector3, THREE.Vector3] = [
+        new THREE.Vector3(0, 0, 0),
+        v1.clone(),
+        v1.clone().add(v2),
+        v2.clone(),
+      ];
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setFromPoints(points);
+      const material = new THREE.LineBasicMaterial({ color: hex, opacity: 0.5, transparent: true });
+      const parallelogram = new THREE.LineLoop(geometry, material);
+
+      // Create fill for the parallelogram
+      const fillGeometry = new THREE.BufferGeometry();
+      fillGeometry.setFromPoints([points[0], points[1], points[2], points[0], points[2], points[3]]);
+      const fillMaterial = new THREE.MeshBasicMaterial({ color: hex, opacity: 0.2, transparent: true, side: THREE.DoubleSide });
+      const fill = new THREE.Mesh(fillGeometry, fillMaterial);
+
+      // Add label at the center of the parallelogram
+      const center = new THREE.Vector3()
+        .addVectors(v1, v2)
+        .multiplyScalar(0.5);
+      const bivectorLabel = createLabel(center, name);
+
+      // Add everything to the container
+      bivectorContainer.add(vectorHelper1);
+      bivectorContainer.add(vectorHelper2);
+      bivectorContainer.add(parallelogram);
+      bivectorContainer.add(fill);
+      bivectorContainer.add(bivectorLabel);
+
+      // Store the original vectors in userData
+      bivectorContainer.userData.target = vectors;
+
+      // Add to scene
+      sceneRef.current!.add(bivectorContainer);
+
+      setVectors((vectors) => {
+        let existingVectors = vectors;
+
+        if (idx !== null) {
+          // remove target vector first
+          const targetVector = existingVectors[idx];
+          targetVector.vector.remove(...targetVector.vector.children);
+          sceneRef.current!.remove(targetVector.vector);
+          existingVectors = existingVectors.filter(
+            (_vector, index) => index !== idx
+          );
+        }
+
+        let newVector = { vector: bivectorContainer, name: name };
+        return [...existingVectors, newVector];
+      });
+    },
+    []
+  );
+
   // Add methods to add/remove vectors by name
   const addVector = useCallback((name: string, value: R300) => {
-    const vector = r300_to_threejs_object(value);
-    drawVector(vector, name, null);
-  }, [drawVector]);
+    const result = r300_to_threejs_object(value);
+    if (Array.isArray(result)) {
+      drawBivector(result, name, null);
+    } else {
+      drawVector(result, name, null);
+    }
+  }, [drawVector, drawBivector]);
 
   const addVectorWithPosition = useCallback((name: string, position: { x: number, y: number, z: number }) => {
     const vector = new THREE.Vector3(position.x, position.y, position.z);
