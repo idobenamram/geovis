@@ -19,7 +19,7 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetch('/content/ga_transformations.md')
+    fetch('/content/ga_equations.md')
       .then(response => response.text())
       .then(content => setLatexContent(content))
       .catch(error => console.error('Error loading markdown:', error));

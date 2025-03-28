@@ -69,24 +69,22 @@ const r300_to_threejs_object = (r300: R300): THREE.Vector3 | [THREE.Vector3, THR
   if (r300.isVector()) {
     return new THREE.Vector3(r300.get(1), r300.get(2), r300.get(3));
   }
+  // TODO: I am pretty sure this is wrong...
   if (r300.isBivector()) {
-    // For bivectors, we'll return an array of two vectors that span the plane
-    // The first vector is directly from the bivector components
-    const bivector = new THREE.Vector3(r300.get(4), r300.get(5), r300.get(6));
-    const b = new THREE.Vector3(bivector.z, -bivector.y, bivector.x);
-    const z = new THREE.Vector3(0,0,1);
-    // Get v1 by taking cross product of b with z if they're not parallel,
-    // otherwise use x axis
+    const b = new THREE.Vector3(r300.get(4), r300.get(5), r300.get(6));
     let v1;
-    if (Math.abs(b.dot(z)) < 0.99) {  // Check if b and z are not nearly parallel
-        v1 = z.clone().sub(b.clone().normalize().multiplyScalar(z.dot(b)));
+    if (b.x !== 0) {
+      v1 = new THREE.Vector3(-b.y/b.x, 1, 0);
+    } else if (b.y !== 0) {
+      v1 = new THREE.Vector3(1, -b.y/b.z, 0);
     } else {
-        v1 = new THREE.Vector3(1,0,0);
+      v1 = new THREE.Vector3(1, 0, 0);
     }
-    v1.multiplyScalar(b.length());  // Scale v1 to match bivector magnitude
 
-    // We can get v2 by taking the cross product of b with v1
+    v1.normalize();
+    v1.multiplyScalar(b.length());
     const v2 = new THREE.Vector3().crossVectors(b, v1).normalize().multiplyScalar(v1.length());
+
     return [v1, v2] as [THREE.Vector3, THREE.Vector3];
   }
   return new THREE.Vector3(0, 0, 0);
