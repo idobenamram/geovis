@@ -9,9 +9,9 @@ So from this:
 a \cdot (b \wedge c \wedge d)
 ```
 
-you get an interactive component, ![[resources/example_clean.png]].
-where you can see the AST of the equation ![[resources/example_ast.png]].
-and you can click on the nodes to place them in the 3D space ![[resources/example_3dspace.png]].
+you get an interactive component, ![](resources/example_clean.png).
+where you can see the AST of the equation ![](resources/example_ast.png).
+and you can click on the nodes to place them in the 3D space ![](resources/example_3dspace.png).
 
 This is supposedly one tool in many that can be created to make textbooks interactive and bring a little life to them.
 
