@@ -534,6 +534,15 @@ body {
     position: relative;
 }
 
+.latex-visualizer .visualization-container.hidden {
+    visibility: hidden;
+    height: 0;
+    width: 0;
+    z-index: -1;
+    opacity: 0;
+    pointer-events: none;
+}
+
 .latex-visualizer .threejs-container,
 .latex-visualizer .ast-container {
     height: 100%;

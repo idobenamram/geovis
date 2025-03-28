@@ -108,25 +108,23 @@ const LatexVisualizer: React.FC<LatexVisualizerProps> = ({ latex, className }) =
                 </div>
             </div>
 
-            {visualizationMode !== VisualizationMode.NONE && (
-                <div className="visualization-container">
-                    {/* ThreeJs3DSpace is always rendered but visibility is toggled */}
-                    <div
-                        className={`threejs-container ${visualizationMode === VisualizationMode.THREEJS ? 'visible' : 'hidden'}`}
-                    >
-                        <ThreeJs3DSpace ref={threejsRef} />
-                    </div>
-
-                        <div className={`ast-container ${visualizationMode === VisualizationMode.AST ? 'visible' : 'hidden'}`}>
-                            <ASTTreeVisualization
-                                ast={ast}
-                                input={latex}
-                                onVectorAdd={handleVectorAdd}
-                                onVectorRemove={handleVectorRemove}
-                            />
-                        </div>
+            <div className={`visualization-container ${visualizationMode === VisualizationMode.NONE ? 'hidden' : 'visible'}`}>
+                {/* ThreeJs3DSpace is always rendered but visibility is toggled */}
+                <div
+                    className={`threejs-container ${visualizationMode === VisualizationMode.THREEJS ? 'visible' : 'hidden'}`}
+                >
+                    <ThreeJs3DSpace ref={threejsRef} />
                 </div>
-            )}
+
+                <div className={`ast-container ${visualizationMode === VisualizationMode.AST ? 'visible' : 'hidden'}`}>
+                    <ASTTreeVisualization
+                        ast={ast}
+                        input={latex}
+                        onVectorAdd={handleVectorAdd}
+                        onVectorRemove={handleVectorRemove}
+                    />
+                </div>
+            </div>
         </div>
     );
 };
