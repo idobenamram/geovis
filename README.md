@@ -24,3 +24,12 @@ Currently this is not very usable and there is a lot to be done to actually make
 5. lots more...
 
 But hopefully it gets the point accross a little, had fun vibe coding this project :)
+
+
+### Building
+it requires another [project](https://github.com/idobenamram/latex-expr-parser) of mine to parse the latex in the parent directory (sorry)
+```
+pnpm install
+cd src/geo-cal/ && wasm-pack build --target bundler
+pnpm run dev
+```
